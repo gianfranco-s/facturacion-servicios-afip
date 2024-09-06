@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+
 
 from afip import Afip
 
@@ -34,6 +36,7 @@ def main(CUIT: int = DEV_CUIT) -> None:
         email='facturas_baitcon@datco.net',
     )
 
+    current_date = int(datetime.today().strftime("%Y%m%d"))
     since, until, overdue = get_period(gsalomone.month_billed.value)
     invoice_number = get_invoice_number(afip_client=afip,
                                         sales_location=gsalomone.sales_location,
@@ -41,13 +44,21 @@ def main(CUIT: int = DEV_CUIT) -> None:
     data = get_data_for_voucher(contribuyente=gsalomone,
                                 consumidor=baitcon,
                                 invoice_number=invoice_number,
+                                date=current_date,
                                 since=since,
                                 until=until,
                                 overdue=overdue)
 
     res = afip.ElectronicBilling.createVoucher(data)
 
-    print(res.items())
+    CAE = res.get('CAE')
+    vencimiento_cae = res.get('CAEFchVto')
+
+    id_before_tax = 1440000
+    activity_since = '01/12/2022'
+
+    
+
 
 
 if __name__ == '__main__':
