@@ -44,7 +44,7 @@ class CondicionFrenteIVA(Enum):
 class Consumidor:
     full_name: str
     id_type: TipoDeDocumento
-    id_nr: str
+    id_nr: int
     tax_situation: CondicionFrenteIVA
     email: str
 
