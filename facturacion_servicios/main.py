@@ -1,9 +1,14 @@
+import json
+
 from afip import Afip
 
 from afip_enums import TipoDeDocumento, TipoFactura, Concepto, Mes, CondicionFrenteIVA, Consumidor, Contribuyente
 from voucher import get_data_for_voucher, get_invoice_number, get_period
 
-DEV_CUIT = 20409378472
+with open('./credentials.json', 'r') as f:
+    DEV_CUIT = json.load(f).get('dev').get('CUIT')
+
+
 def main(CUIT: int = DEV_CUIT) -> None:
     afip = Afip({ "CUIT":  CUIT})
 
