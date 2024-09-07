@@ -1,15 +1,31 @@
 from datetime import datetime
+from typing import List
 
 from afip import Afip
 from jinja2 import Template
 
-from afip_enums import Consumidor, Contribuyente
+from afip_enums import Consumidor, Contribuyente, ServicioPrestado
 
 
-def render_invoice(invoice_data: dict, template_filename: str = 'invoice_template.html') -> str:
+def render_invoice(invoice_data: dict,
+                   invoice_services: List[ServicioPrestado],
+                   total_value: float,
+                   template_filename: str = 'invoice_template.html',
+                   export_file: bool = False) -> str:
     with open(f'./{template_filename}', 'r') as f:
         invoice_template = Template(f.read())
-    rendered_html = invoice_template.render(invoice_data)
+    
+    data = {
+        **invoice_data,
+        'invoice_services': invoice_services,
+        'total_value': total_value
+    }
+    rendered_html = invoice_template.render(data)
+
+    if export_file:
+        with open(f'rendered_invoice.html', 'w') as exported_file:
+            exported_file.write(rendered_html)
+
     return rendered_html
 
 

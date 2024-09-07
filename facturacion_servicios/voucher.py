@@ -34,8 +34,8 @@ def get_data_for_voucher(contribuyente: Contribuyente,
                          date: int,
                          since: str,
                          until: str,
-                         overdue: str) -> dict:
-    importe_total = contribuyente.unit_amount * contribuyente.units
+                         overdue: str,
+                         importe_total: float) -> dict:
 
     if contribuyente.concept == Concepto.productos:
         fecha_servicio_desde = None

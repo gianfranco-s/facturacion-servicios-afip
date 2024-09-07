@@ -240,16 +240,18 @@
 							<td>Imp. Bonif.</td>
 							<td>Subtotal</td>
 						</tr>
-						<tr>
-							<td>321</td>
-							<td>Madera</td>
-							<td>1,00</td>
-							<td>Unidad</td>
-							<td>150,00</td>
-							<td>0,00</td>
-							<td>0,00</td>
-							<td>150,00</td>
-						</tr>
+						{% for item in invoice_services %}
+							<tr>
+								<td>{{ item.codigo }}</td>
+								<td>&nbsp;&nbsp;&nbsp;&nbsp;{{ item.servicio }}</td>
+								<td>&nbsp;&nbsp;{{ item.cantidad }}</td>
+								<td>&nbsp;&nbsp;{{ item.unidad }}</td>
+								<td>&nbsp;&nbsp;{{ item.precio_unit }}</td>
+								<td>&nbsp;&nbsp;{{ item.bonif }}</td>
+								<td>&nbsp;&nbsp;{{ item.imp_bonif }}</td>
+								<td>&nbsp;&nbsp;{{ item.subtotal }}</td>
+							</tr>
+						{% endfor %}
 					</table>
 				</div>
 			</td>
@@ -262,7 +264,7 @@
 							<strong>Subtotal: $</strong>
 						</p>
 						<p class="col-2 margin-b-0">
-							<strong>150,00</strong>
+							<strong>{{ total_value }}</strong>
 						</p>
 					</div>
 					<div class="row text-right">
@@ -278,7 +280,7 @@
 							<strong>Importe total: $</strong>
 						</p>
 						<p class="col-2 margin-b-0">
-							<strong>150,00</strong>
+							<strong>{{ total_value }}</strong>
 						</p>
 					</div>
 				</div>

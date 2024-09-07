@@ -60,3 +60,18 @@ class Contribuyente(Consumidor):
 	sales_location: int  # punto de venta
 	id_before_tax: int
 	activity_since: str
+
+
+@dataclass
+class ServicioPrestado:
+	servicio: str
+	cantidad: float
+	precio_unit: float
+	bonif: float
+	imp_bonif: float
+	codigo: int | str = ''
+	unidad: str = 'unidades'
+	subtotal: float = 0.0
+
+	def __post_init__(self) -> None:
+		self.subtotal = self.cantidad * self.precio_unit
