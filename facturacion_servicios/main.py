@@ -60,7 +60,7 @@ def main(CUIT: int, month: Mes) -> None:
     invoice_data = create_data_for_render(contribuyente=gsalomone,
                                           consumidor=baitcon,
                                           CAE=voucher.get('CAE'),
-                                          vencimiento_cae=voucher.get('vencimiento_cae'),
+                                          vencimiento_cae=voucher.get('CAEFchVto'),
                                           invoice_number=invoice_number,
                                           since=since,
                                           until=until,
