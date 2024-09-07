@@ -42,18 +42,21 @@ class CondicionFrenteIVA(Enum):
 
 @dataclass
 class Consumidor:
-    full_name: str
-    id_type: TipoDeDocumento
-    id_nr: int
-    tax_situation: CondicionFrenteIVA
-    email: str
+	full_name: str
+	id_type: TipoDeDocumento
+	id_nr: int
+	tax_situation: CondicionFrenteIVA
+	email: str
+	legal_address: str
 
 
 @dataclass
 class Contribuyente(Consumidor):
-    month_billed: Mes
-    concept: Concepto
-    unit_amount: float
-    units: float
-    invoice_type: TipoFactura
-    sales_location: int  # punto de venta
+	month_billed: Mes
+	concept: Concepto
+	unit_amount: float
+	units: float
+	invoice_type: TipoFactura
+	sales_location: int  # punto de venta
+	id_before_tax: int
+	activity_since: str
