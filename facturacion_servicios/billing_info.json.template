@@ -1,0 +1,50 @@
+{
+    "tax-payer": {
+        "full_name": "<nombre-en-la-factura>",
+        "id_type": "cuit",
+        "id_nr": "<número-de-cuit>",
+        "tax_situation": "responsable monotributo",
+        "email": "<tu-email>",
+        "month_billed": "agosto",
+        "invoice_type": "factura c",
+        "concept": "servicios",
+        "sales_location": "<entero-punto-de-venta>",
+        "legal_address": "<dirección-punto-de-venta",
+        "id_before_tax": "<entero-ingresos-brutos>",
+        "activity_since": "<fecha-inicio-actividades-YYYYMMDD>"
+    },
+    "services": [
+        {
+            "servicio": "Hora de desarrollo",
+            "cantidad": 80.0,
+            "precio_unit": 7500.0,
+            "bonif": 0.0,
+            "imp_bonif": 0.0
+        },
+        {
+            "servicio": "Hora de consultoría",
+            "cantidad": 10.0,
+            "precio_unit": 1500.0,
+            "bonif": 0.0,
+            "imp_bonif": 0.0
+        }
+    ],
+    "consumers": [
+        {
+            "full_name": "Cliente 1",
+            "id_type": "cuit",
+            "id_nr": "<cuit-cliente-1>",
+            "tax_situation": "iva responsable inscripto",
+            "email": "<email-cliente-1>",
+            "legal_address": "<domicilio-legal-cliente-1>"
+        },
+        {
+            "full_name": "Cliente 2",
+            "id_type": "cuit",
+            "id_nr": "<cuit-cliente-2>",
+            "tax_situation": "iva responsable inscripto",
+            "email": "<email-cliente-2>",
+            "legal_address": "<domicilio-legal-cliente-1>"
+        }
+    ]
+}

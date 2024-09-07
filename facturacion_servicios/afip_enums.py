@@ -54,8 +54,6 @@ class Consumidor:
 class Contribuyente(Consumidor):
 	month_billed: Mes
 	concept: Concepto
-	unit_amount: float
-	units: float
 	invoice_type: TipoFactura
 	sales_location: int  # punto de venta
 	id_before_tax: int
