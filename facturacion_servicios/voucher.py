@@ -2,7 +2,7 @@ from typing import Tuple
 from datetime import datetime, timedelta
 from afip import Afip
 
-from afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente
+from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente
 
 
 def get_period(month: int) -> Tuple[str]:
@@ -66,6 +66,7 @@ def get_data_for_voucher(contribuyente: Contribuyente,
         "ImpOpEx": 0,
         "ImpIVA": 0,
         "ImpTrib": 0,  # Importe total de tributos
-        "MonId": "PES",  # Tipo de moneda usada en la factura ("PES" = pesos argentinos) 
-        "MonCotiz": 1  # Cotización de la moneda usada (1 para pesos argentinos)  
+        "MonId": "PES",  # Tipo de moneda usada en la factura ("PES" = pesos argentinos)
+        "MonCotiz": 1,  # Cotización de la moneda usada (1 para pesos argentinos)
+        "CondicionIVAReceptorId": consumidor.tax_situation.value,
     }

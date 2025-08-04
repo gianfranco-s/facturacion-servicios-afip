@@ -1,9 +1,8 @@
-import json
 from datetime import datetime
 
 from afip import Afip
 
-from afip_enums import (Mes,
+from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,
                         Consumidor,
@@ -11,15 +10,12 @@ from afip_enums import (Mes,
                         ServicioPrestado,
                         TipoDeDocumento,
                         TipoFactura,)
-from create_pdf import render_invoice, create_invoice_through_afip, create_data_for_render
-from voucher import get_data_for_voucher, get_invoice_number, get_period
-
-with open('./credentials.json', 'r') as f:
-    DEV_CUIT = json.load(f).get('dev').get('CUIT')
+from facturacion_servicios.afip_session import afip_session
+from facturacion_servicios.create_pdf import render_invoice, create_invoice_through_afip, create_data_for_render
+from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
 
 
-def main(CUIT: int, month: Mes) -> None:
-    afip = Afip({ "CUIT":  CUIT})
+def main(month: Mes, afip: Afip = afip_session) -> None:
 
     gsalomone = Contribuyente(
         full_name='SALOMONE GIANFRANCO',
@@ -81,9 +77,10 @@ def main(CUIT: int, month: Mes) -> None:
                                 until=until,
                                 overdue=overdue,
                                 importe_total=total_value)
-
+    print(data)
     voucher = afip.ElectronicBilling.createVoucher(data)
 
+    print(voucher)
     invoice_data = create_data_for_render(contribuyente=gsalomone,
                                           consumidor=baitcon,
                                           CAE=voucher.get('CAE'),
@@ -92,6 +89,7 @@ def main(CUIT: int, month: Mes) -> None:
                                           since=since,
                                           until=until,
                                           overdue=overdue)
+    print(invoice_data)
     
     invoice = render_invoice(invoice_data, invoice_services, total_value)
     current_timestamp = datetime.today().strftime("%Y%m%d")
@@ -119,5 +117,4 @@ def get_month_from_cli() -> int | None:
     return None
 
 if __name__ == '__main__':
-    PRD_CUIT = get_prod_cuit()
-    main(PRD_CUIT or DEV_CUIT, month=Mes.agosto)
+    main(month=Mes.agosto)

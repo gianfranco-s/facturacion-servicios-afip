@@ -4,15 +4,17 @@ from typing import List
 from afip import Afip
 from jinja2 import Template
 
-from afip_enums import Consumidor, Contribuyente, ServicioPrestado
+from facturacion_servicios import BASEDIR
+from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado
 
 
 def render_invoice(invoice_data: dict,
                    invoice_services: List[ServicioPrestado],
                    total_value: float,
+                   template_dir: str = "facturacion_servicios",
                    template_filename: str = 'invoice_template.html',
                    export_file: bool = False) -> str:
-    with open(f'./{template_filename}', 'r') as f:
+    with open(BASEDIR / template_dir / template_filename, 'r') as f:
         invoice_template = Template(f.read())
     
     data = {
@@ -23,7 +25,7 @@ def render_invoice(invoice_data: dict,
     rendered_html = invoice_template.render(data)
 
     if export_file:
-        with open(f'rendered_invoice.html', 'w') as exported_file:
+        with open(BASEDIR / "rendered_invoice.html", "w") as exported_file:
             exported_file.write(rendered_html)
 
     return rendered_html
@@ -60,7 +62,7 @@ def create_data_for_render(contribuyente: Contribuyente,
         razon_social=contribuyente.full_name,
         invoice_type=contribuyente.invoice_type.value,
         domicilio_comercial=contribuyente.legal_address,
-        condicion_frente_al_iva=contribuyente.tax_situation.value,
+        condicion_frente_al_iva=contribuyente.tax_situation.name,
         sales_location=contribuyente.sales_location,
         invoice_number=invoice_number,
         contribuyente_cuit=contribuyente.id_nr,

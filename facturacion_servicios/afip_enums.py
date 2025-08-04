@@ -35,9 +35,17 @@ class Mes(Enum):
 
 
 class CondicionFrenteIVA(Enum):
-	iva_responsable_inscripto = 'IVA Responsable Inscripto'
-	responsable_monotributo = 'Responsable Monotributo'
-	# Completar
+	iva_responsable_inscripto = 1
+	iva_sujeto_exento = 4
+	consumidor_final = 5
+	responsable_monotributo = 6
+	sujeto_no_categorizado = 7
+	proveedor_del_exterior = 8
+	cliente_del_exterior = 9
+	iva_liberado = 10
+	monotributista_social = 13
+	iva_no_alcanzado = 15
+	monotributo_trabajador_independiente_promovido = 16
 
 
 @dataclass
