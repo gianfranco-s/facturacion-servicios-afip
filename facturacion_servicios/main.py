@@ -11,7 +11,7 @@ from facturacion_servicios.afip_enums import (Mes,
                         TipoDeDocumento,
                         TipoFactura,)
 from facturacion_servicios.afip_session import afip_session
-from facturacion_servicios.create_pdf import render_invoice, create_invoice_through_afip, create_data_for_render
+from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_data_for_render
 from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
 
 
@@ -93,28 +93,9 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
     print(invoice)
     current_timestamp = datetime.today().strftime("%Y%m%d")
     name = f"factura_gsalomone_baitcon_{current_timestamp}"
-    link = create_invoice_through_afip(rendered_html=invoice, file_name=name)
-    # link = create_invoice_through_afip(afip_client=afip, rendered_html=invoice, file_name=name)
-    print(link)
+    render_pdf(rendered_html=invoice, file_name=name)
+    print(name)
 
-
-def get_prod_cuit() -> int | None:
-    """get prod cuit"""
-    # If none is provided, return None
-    return None
-
-
-def get_month_from_cli() -> int | None:
-    """if none is provided, return current month"""
-    # Use Enum Mes
-    """
-    class Mes(Enum):
-        enero = 1
-        febrero = 2
-        marzo = 3
-        abril = 4
-    """
-    return None
 
 if __name__ == '__main__':
     main(month=Mes.agosto)

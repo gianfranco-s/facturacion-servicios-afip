@@ -2,7 +2,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from afip import Afip
 from jinja2 import Template
 from weasyprint import HTML, CSS
 
@@ -33,56 +32,41 @@ def render_invoice(invoice_data: dict,
     return rendered_html
 
 
-def create_invoice_through_afip(rendered_html: str, file_name: str) -> str:
-# def create_invoice_through_afip(afip_client: Afip, rendered_html: str, file_name: str) -> str:
-    options = {
-        "width": 8,  # Ancho de pagina en pulgadas. Usar 3.1 para ticket
-        "marginLeft": 0.4,  # Margen izquierdo en pulgadas. Usar 0.1 para ticket 
-        "marginRight": 0.4,  # Margen derecho en pulgadas. Usar 0.1 para ticket 
-        "marginTop": 0.4,  # Margen superior en pulgadas. Usar 0.1 para ticket 
-        "marginBottom": 0.4  # Margen inferior en pulgadas. Usar 0.1 para ticket 
-    }
-
-    # res = afip_client.ElectronicBilling.createPDF({
-    #     "html": rendered_html,
-    #     "file_name": file_name,
-    #     "options": options
-    # })
-
-    # return res["file"]
-
-    res = create_pdf( rendered_html, file_name, options=options)
-
-    return res
-
-
-def create_pdf(
+def render_pdf(
     rendered_html: str,
     file_name: str,
     output_dir: str = ".",
-    options: dict | None = None
+    page_size: str = "A4",
+    margin_top_cm: float = 1.0,
+    margin_right_cm: float = 0.5,
+    margin_bottom_cm: float = 1.0,
+    margin_left_cm: float = 0.5
 ) -> str:
+    """
+    Render HTML → PDF using WeasyPrint, saving to `{output_dir}/{file_name}.pdf`.
 
+    - page_size: any valid CSS size (named or dimension), defaults to "A4" portrait.
+    - margins in centimeters (cm).
+    """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     pdf_path = output_dir / f"{file_name}.pdf"
 
-    html = HTML(string=rendered_html)
-    
-    css_rules = []
-    if options:
-        width_in = options.get("width")
-        # margins in inches:
-        for side in ("Top", "Right", "Bottom", "Left"):
-            key = f"margin{side}"
-            if key in options:
-                css_rules.append(f"@page {{ margin-{side.lower()}: {options[key]}in; }}")
-        if width_in:
-            css_rules.append(f"@page {{ size: {width_in}in auto; }}")
-    css = CSS(string="\n".join(css_rules)) if css_rules else None
-    
-    html.write_pdf(target=str(pdf_path), stylesheets=[css] if css else None)
-    
+    # Build our single @page rule:
+    css = f"""
+    @page {{
+      size: {page_size};
+      margin: {margin_top_cm}cm {margin_right_cm}cm
+              {margin_bottom_cm}cm {margin_left_cm}cm;
+    }}
+    """
+    page_css = CSS(string=css)
+
+    # Render!
+    HTML(string=rendered_html).write_pdf(
+        target=str(pdf_path),
+        stylesheets=[page_css]
+    )
     return str(pdf_path)
 
 
@@ -114,12 +98,27 @@ def create_data_for_render(contribuyente: Contribuyente,
         consumidor_domicilio=consumidor.legal_address,
         CAE=CAE,
         vencimiento_cae=vencimiento_cae,
+        current_date=datetime.now().strftime(r"%d/%m/%Y"),
     )
 
 
 if __name__ == '__main__':
-    afip = Afip({ "CUIT": 20409378472 })
-
+    invoice_services = [
+        ServicioPrestado(
+            servicio='Hora de desarrollo',
+            cantidad=4,
+            precio_unit=1234,
+            bonif=0.0,
+            imp_bonif=0.0,
+        ),
+        ServicioPrestado(
+            servicio='Hora de consultoría',
+            cantidad=12,
+            precio_unit=10,
+            bonif=0.0,
+            imp_bonif=0.0,
+        ),
+    ]
 
     invoice_data = dict(
         razon_social='SALOMONE GIANFRANCO',
@@ -140,10 +139,13 @@ if __name__ == '__main__':
         consumidor_domicilio='Jujuy Av. 1956 - Capital Federal, Ciudad de Buenos Aires',
         CAE='123456abcd',
         vencimiento_cae='22/06/1985',
+        current_date=datetime.now().strftime(r"%d/%m/%Y"),
     )
 
-    invoice = render_invoice(invoice_data)
+    total_value = sum([serv.subtotal for serv in invoice_services])
+
+    invoice = render_invoice(invoice_data, invoice_services, total_value)
+
     current_timestamp = datetime.today().strftime("%Y%m%d")
     name = f"factura_contribuyente_consumidor_{current_timestamp}"
-    link = create_invoice_through_afip(afip_client=afip, rendered_html=invoice, file_name=name)
-    print(link)
+    render_pdf(rendered_html=invoice, file_name=name)
