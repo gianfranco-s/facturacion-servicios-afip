@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class TipoFactura(Enum):
-	factura_c = 11
+	c = 11
 
 
 class Concepto(Enum):

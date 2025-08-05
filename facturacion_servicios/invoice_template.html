@@ -44,6 +44,18 @@
       font-weight: 600;
     }
 
+	.bill-type-caption {
+	  position: absolute;
+	  top: 52px;       /* 50px height + 2px gap */
+	  left: 0;
+	  right: 0;
+	  margin: auto;
+	  font-size: 12px; /* or whatever “small” means to you */
+	  font-weight: normal;
+	  text-align: center;
+	  color: #333;     /* optional: a slightly muted color */
+	}
+
     .text-lg { font-size: 30px; }
     .text-center { text-align: center; }
 
@@ -114,6 +126,7 @@
     <tr class="bill-emitter-row">
       <td>
         <div class="bill-type">{{ invoice_type }}</div>
+        <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
         <div class="text-lg text-center">{{ razon_social }}</div>
         <p><strong>Razón social:</strong> {{ razon_social }}</p>
         <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>

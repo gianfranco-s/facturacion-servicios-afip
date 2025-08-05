@@ -33,7 +33,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
     base_invoice_data = DatosBaseFactura(
         month_billed=month,
         concept=Concepto.servicios,
-        invoice_type=TipoFactura.factura_c,
+        invoice_type=TipoFactura.c,
     )
 
     invoice_services = [
