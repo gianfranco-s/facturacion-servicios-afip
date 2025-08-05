@@ -1,19 +1,27 @@
 # Factura Monotributista
 
+Generar factura:
+```sh
+IS_MOCK=false python3 -m facturacion_servicios.main
+```
+
+[Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)
+[Documentación ARCA WSASS](https://www.afip.gob.ar/ws/WSASS/html/index.html)
+[Web Service de factura electrónica](https://www.afip.gob.ar/ws/documentacion/ws-factura-electronica.asp)
+[Manual para el desarrollador wsfev1](https://www.afip.gob.ar/fe/ayuda/documentos/wsfev1-RG-4291.pdf)
 Basado en [AFIP SDK](https://afipsdk.com/)
 
-python3 -m facturacion_servicios.main
-
 Work in progress:
-- [x] load personal info from json
-- [x] load base invoice info from json
-- [x] load consumer info from json
+- [x] load personal info from JSON
+- [x] load base invoice info from JSON
+- [x] load consumer info from JSON
 - [ ] perform unit tests (check if tax data is correctly sent to AFIP)
 - [x] generate pdf locally
 - [x] generate mock pdf
 - [x] use ',' as decimal separator in final invoice
 - [ ] add logging
 - [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
+- [ ] add QR code to validate invoice
 - [ ] get prod credentials
 
 

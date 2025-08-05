@@ -15,7 +15,7 @@ def get_cae(afip_client: Afip,
             overdue: datetime,
             total_value: float,
             ) -> tuple[str]:
-
+    """CAE stands for Código de Autorización Electrónico it has a code and an expiry date."""
     voucher_data = _convert_data_for_voucher(contribuyente=tax_payer,
                                 base_invoice_data=base_invoice_data,
                                 consumidor=consumer,

@@ -99,11 +99,10 @@ def main(afip: Afip = afip_session) -> None:
     
     invoice_html = render_invoice(invoice_data, invoice_services, total_value)
 
-    consumer_name = consumer.full_name.lower().replace(" ", "_")
-    tax_payer_name = tax_payer.full_name.lower().replace(" ", "_")
-    name = f"{tax_payer_name}_{tax_payer.id_nr}_{invoice_number}_{consumer_name}"
-    render_pdf(rendered_html=invoice_html, file_name=name)
-    print(name)
+    consumer_name = consumer.full_name.lower().replace(" ", "_").replace(".", "_")
+    tax_payer_name = tax_payer.full_name.lower().replace(" ", "_").replace(".", "_")
+    file_name = f"{tax_payer_name}_{tax_payer.id_nr}_{invoice_number}_{consumer_name}"
+    render_pdf(rendered_html=invoice_html, file_name=file_name)
 
 
 def mock_main():
@@ -142,8 +141,8 @@ def mock_main():
 
     invoice = render_invoice(invoice_data, invoice_services, total_value)
 
-    current_timestamp = datetime.today().strftime("%Y%m%d")
-    name = f"factura_contribuyente_consumidor_{current_timestamp}"
+    current_date = datetime.today().strftime("%Y%m%d")
+    name = f"factura_contribuyente_consumidor_{current_date}"
     render_pdf(rendered_html=invoice, file_name=name)
 
 
