@@ -1,9 +1,11 @@
 import json
 
 from datetime import datetime
+from pathlib import Path
 
 from afip import Afip
 
+from facturacion_servicios import JSON_DIR
 from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,
@@ -18,7 +20,7 @@ from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_
 from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
 
 
-def _load_tax_payer(filepath: str = "facturacion_servicios/contribuyente.json") -> Contribuyente:
+def _load_tax_payer(filepath: Path = JSON_DIR / "contribuyente.json") -> Contribuyente:
     """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
     TODO: reduce coupling using pydantic"""
     with open(filepath, "r") as f:
@@ -28,7 +30,7 @@ def _load_tax_payer(filepath: str = "facturacion_servicios/contribuyente.json") 
     return Contribuyente(**tax_payer_dict)
 
 
-def _load_consumer(filepath: str = "facturacion_servicios/consumidor.json") -> Consumidor:
+def _load_consumer(filepath: Path = JSON_DIR / "consumidor.json") -> Consumidor:
     """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
     TODO: reduce coupling using pydantic"""
     with open(filepath, "r") as f:
@@ -39,7 +41,7 @@ def _load_consumer(filepath: str = "facturacion_servicios/consumidor.json") -> C
     return Consumidor(**consumer_dict)
 
 
-def _load_invoice_items(filepath: str = "facturacion_servicios/invoice_items.json") -> list[ServicioPrestado]:
+def _load_invoice_items(filepath: Path = JSON_DIR / "invoice_items.json") -> list[ServicioPrestado]:
     """This function is geared towards services"""
     with open(filepath, "r") as f:
         invoice_items_list = json.load(f)
@@ -47,7 +49,7 @@ def _load_invoice_items(filepath: str = "facturacion_servicios/invoice_items.jso
     return [ServicioPrestado(**item) for item in invoice_items_list]
 
 
-def _load_base_invoice_data(filepath: str = "facturacion_servicios/base_invoice_data.json") -> DatosBaseFactura:
+def _load_base_invoice_data(filepath: Path = JSON_DIR / "base_invoice_data.json") -> DatosBaseFactura:
     """This function is highly coupled with the implementation of Mes, Concepto and TipoFactura"""
     with open(filepath, "r") as f:
         invoice_items_list = json.load(f)
