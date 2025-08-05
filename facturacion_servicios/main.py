@@ -45,17 +45,23 @@ def _load_invoice_items(filepath: str = "facturacion_servicios/invoice_items.jso
         invoice_items_list = json.load(f)
     
     return [ServicioPrestado(**item) for item in invoice_items_list]
-    
 
-def main(month: Mes, afip: Afip = afip_session) -> None:
+
+def _load_base_invoice_data(filepath: str = "facturacion_servicios/base_invoice_data.json") -> DatosBaseFactura:
+    """This function is highly coupled with the implementation of Mes, Concepto and TipoFactura"""
+    with open(filepath, "r") as f:
+        invoice_items_list = json.load(f)
+    invoice_items_list["month_billed"] = Mes(invoice_items_list["month_billed"])
+    invoice_items_list["concept"] = Concepto[invoice_items_list["concept"]]
+    invoice_items_list["invoice_type"] = TipoFactura[invoice_items_list["invoice_type"]]
+    return DatosBaseFactura(**invoice_items_list)
+
+
+def main(afip: Afip = afip_session) -> None:
 
     tax_payer = _load_tax_payer()
 
-    base_invoice_data = DatosBaseFactura(
-        month_billed=month,
-        concept=Concepto.servicios,
-        invoice_type=TipoFactura.c,
-    )
+    base_invoice_data = _load_base_invoice_data()
 
     invoice_services = _load_invoice_items()
     total_value = sum([serv.subtotal for serv in invoice_services])
@@ -105,11 +111,13 @@ def mock_main(month: Mes):
     invoice_services = _load_invoice_items()
     total_value = sum([serv.subtotal for serv in invoice_services])
 
-    since, until, overdue = get_period(month.value)
+    base_invoice_data = _load_base_invoice_data()
+
+    since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     invoice_data = dict(
-        invoice_type=TipoFactura.c.name.upper(),
-        invoice_type_code=TipoFactura.c.value,
+        invoice_type=base_invoice_data.invoice_type.name.upper(),
+        invoice_type_code=base_invoice_data.invoice_type.value,
         razon_social=tax_payer.full_name,
         domicilio_comercial=tax_payer.legal_address,
         condicion_frente_al_iva=tax_payer.tax_situation.name,
