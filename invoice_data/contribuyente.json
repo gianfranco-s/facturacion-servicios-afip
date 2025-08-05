@@ -2,7 +2,7 @@
     "full_name": "SALOMONE GIANFRANCO",
     "id_type": "cuit",
     "id_nr": 23316378609,
-    "tax_situation": 6,
+    "tax_situation": "responsable_monotributo",
     "email": "gianfranco.s@gmail.com",
     "sales_location": 2,
     "legal_address": "Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro",

@@ -20,25 +20,24 @@ from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_
 from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
 
 
-def _load_tax_payer(filepath: Path = JSON_DIR / "contribuyente.json") -> Contribuyente:
+def __load_legal_person(filepath: Path) -> dict:
     """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
     TODO: reduce coupling using pydantic"""
     with open(filepath, "r") as f:
         tax_payer_dict = json.load(f)
     tax_payer_dict["id_type"] = TipoDeDocumento[tax_payer_dict["id_type"]]
-    tax_payer_dict["tax_situation"] = CondicionFrenteIVA(tax_payer_dict["tax_situation"])
+    tax_payer_dict["tax_situation"] = CondicionFrenteIVA[tax_payer_dict["tax_situation"]]
+    return tax_payer_dict
+
+
+def _load_tax_payer(filepath: Path = JSON_DIR / "contribuyente.json") -> Contribuyente:
+    tax_payer_dict = __load_legal_person(filepath)
     return Contribuyente(**tax_payer_dict)
 
 
 def _load_consumer(filepath: Path = JSON_DIR / "consumidor.json") -> Consumidor:
-    """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
-    TODO: reduce coupling using pydantic"""
-    with open(filepath, "r") as f:
-        consumer_dict = json.load(f)
-    consumer_dict["id_type"] = TipoDeDocumento[consumer_dict["id_type"]]
-    consumer_dict["tax_situation"] = CondicionFrenteIVA[consumer_dict["tax_situation"]]
-    
-    return Consumidor(**consumer_dict)
+    tax_payer_dict = __load_legal_person(filepath)    
+    return Consumidor(**tax_payer_dict)
 
 
 def _load_invoice_items(filepath: Path = JSON_DIR / "invoice_items.json") -> list[ServicioPrestado]:
@@ -148,11 +147,15 @@ def mock_main(month: Mes):
 
 
 if __name__ == '__main__':
-    import os
-    IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
-    if IS_MOCK:
-        mock_main(month=Mes.agosto)
+    cons = _load_consumer()
+    tp = _load_tax_payer()
+    print(cons)
+    print(tp)
+    # import os
+    # IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
+    # if IS_MOCK:
+    #     mock_main(month=Mes.agosto)
 
-    else:
-        print("WARNING: this communicates with ARCA")
-        main(month=Mes.agosto)
+    # else:
+    #     print("WARNING: this communicates with ARCA")
+    #     main(month=Mes.agosto)

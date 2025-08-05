@@ -17,17 +17,31 @@ Work in progress:
 - [ ] get prod credentials
 
 
-Some notes:
-contribuyente.json
-```json
-{
-    ...
-    "id_type": "cuit",  # en minúscula, ver TipoDeDocumento
-    ...
-    "tax_situation": 6,  # ver CondicionFrenteIVA
-    ...
-}
-```
+<details>
+  <summary>Notas sobre los archivos JSON</summary>
+    consumidor.json / contribuyente.json
+    ```json
+    {
+        ...
+        "id_type": "cuit",  # ver TipoDeDocumento
+        ...
+        "tax_situation": "responsable_monotributo",  # ver CondicionFrenteIVA
+        ...
+    }
+    ```
+
+    base_invoice_data.json
+    ```json
+    {
+        "month_billed": 8,  # enteros, 1 a 12
+        "concept": "servicios",  # ver Concepto
+        "invoice_type": "c"  # ver TipoFactura
+    }
+
+    ```
+
+</details>
+
 
 # Guía de inicio
 [Fuente ARCA](https://www.afip.gob.ar/ws/)
