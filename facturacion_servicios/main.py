@@ -39,6 +39,14 @@ def _load_consumer(filepath: str = "facturacion_servicios/consumidor.json") -> C
     return Consumidor(**consumer_dict)
 
 
+def _load_invoice_items(filepath: str = "facturacion_servicios/invoice_items.json") -> list[ServicioPrestado]:
+    """This function is geared towards services"""
+    with open(filepath, "r") as f:
+        invoice_items_list = json.load(f)
+    
+    return [ServicioPrestado(**item) for item in invoice_items_list]
+    
+
 def main(month: Mes, afip: Afip = afip_session) -> None:
 
     tax_payer = _load_tax_payer()
@@ -49,26 +57,10 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
         invoice_type=TipoFactura.c,
     )
 
-    invoice_services = [
-        ServicioPrestado(
-            servicio='Hora de desarrollo',
-            cantidad=80,
-            precio_unit=19366.40,
-            bonif=0.0,
-            imp_bonif=0.0,
-        ),
-        ServicioPrestado(
-            servicio='Hora de consultoría',
-            cantidad=12,
-            precio_unit=10,
-            bonif=0.0,
-            imp_bonif=0.0,
-        ),
-    ]
-
+    invoice_services = _load_invoice_items()
     total_value = sum([serv.subtotal for serv in invoice_services])
 
-    baitcon = _load_consumer()
+    consumer = _load_consumer()
 
     current_date = int(datetime.today().strftime("%Y%m%d"))
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
@@ -79,7 +71,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 
     data = get_data_for_voucher(contribuyente=tax_payer,
                                 base_invoice_data=base_invoice_data,
-                                consumidor=baitcon,
+                                consumidor=consumer,
                                 invoice_number=invoice_number,
                                 date=current_date,
                                 since=since.strftime(r"%Y%m%d"),
@@ -91,7 +83,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 
     invoice_data = create_data_for_render(contribuyente=tax_payer,
                                           base_invoice_data=base_invoice_data,
-                                          consumidor=baitcon,
+                                          consumidor=consumer,
                                           CAE=voucher.get('CAE'),
                                           vencimiento_cae=voucher.get('CAEFchVto'),
                                           invoice_number=invoice_number,
@@ -110,23 +102,8 @@ def mock_main(month: Mes):
     """No connection to ARCA API"""
     tax_payer = _load_tax_payer()
     consumer = _load_consumer()
-
-    invoice_services = [
-        ServicioPrestado(
-            servicio='Hora de desarrollo',
-            cantidad=4,
-            precio_unit=1234,
-            bonif=0.0,
-            imp_bonif=0.0,
-        ),
-        ServicioPrestado(
-            servicio='Hora de consultoría',
-            cantidad=12,
-            precio_unit=10,
-            bonif=0.0,
-            imp_bonif=0.0,
-        ),
-    ]
+    invoice_services = _load_invoice_items()
+    total_value = sum([serv.subtotal for serv in invoice_services])
 
     since, until, overdue = get_period(month.value)
 
@@ -153,8 +130,6 @@ def mock_main(month: Mes):
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
     )
 
-    total_value = sum([serv.subtotal for serv in invoice_services])
-
     invoice = render_invoice(invoice_data, invoice_services, total_value)
 
     current_timestamp = datetime.today().strftime("%Y%m%d")
@@ -163,7 +138,6 @@ def mock_main(month: Mes):
 
 
 if __name__ == '__main__':
-    _load_consumer()
     import os
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
     if IS_MOCK:
