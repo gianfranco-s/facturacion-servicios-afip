@@ -21,7 +21,7 @@ Work in progress:
 - [x] use ',' as decimal separator in final invoice
 - [ ] add logging
 - [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
-- [ ] add QR code to validate invoice
+- [x] add QR code to validate invoice
 - [ ] get prod credentials
 
 

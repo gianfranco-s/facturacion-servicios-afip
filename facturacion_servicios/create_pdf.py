@@ -74,8 +74,9 @@ def create_data_for_render(contribuyente: Contribuyente,
                            invoice_number: str,
                            since: str,
                            until: str,
-                           overdue: str
-                           ) -> dict:
+                           overdue: str,
+                           qr_code: str,
+                           validation_url: str,) -> dict:
     return dict(
         razon_social=contribuyente.full_name,
         domicilio_comercial=contribuyente.legal_address,
@@ -97,6 +98,8 @@ def create_data_for_render(contribuyente: Contribuyente,
         CAE=CAE,
         vencimiento_cae=vencimiento_cae,
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
+        qr_code=qr_code,
+        validation_url=validation_url
     )
 
 

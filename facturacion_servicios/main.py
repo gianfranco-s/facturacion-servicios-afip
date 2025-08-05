@@ -15,6 +15,7 @@ from facturacion_servicios.afip_enums import (Mes,
                         ServicioPrestado,
                         TipoDeDocumento,
                         TipoFactura,)
+from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
 from facturacion_servicios.afip_session import afip_session
 from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_data_for_render
 from facturacion_servicios.voucher import get_cae, get_invoice_number, get_period
@@ -69,7 +70,7 @@ def main(afip_client: Afip | None) -> None:
 
     consumer = _load_consumer()
 
-    current_date = datetime.today().strftime("%Y%m%d")
+    current_date = datetime.today()
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     if afip_client is not None:
@@ -88,10 +89,26 @@ def main(afip_client: Afip | None) -> None:
                                     until=until,
                                     overdue=overdue,
                                     total_value=total_value)
+
+        validation_url = invoice_validation_url(
+            cuit=tax_payer.id_nr,
+            cae=int(CAE),
+            fecha_emision=current_date,
+            tipo_factura_code=base_invoice_data.invoice_type.value,
+            punto_venta=tax_payer.sales_location,
+            numero_comprobante=invoice_number,
+            importe_total=total_value,
+            tipo_doc_receptor_code=consumer.id_type.value,
+            numero_doc_receptor=consumer.id_nr
+        )
+
     else:
-        invoice_number = '00000026'
-        CAE='123456abcd'
+        invoice_number = 52
+        CAE=75314447442077
         vencimiento_cae='22/06/1985'
+        validation_url = invoice_validation_url(is_mock=True)
+
+    qr_code = generate_qr(validation_url)
 
     invoice_data = create_data_for_render(contribuyente=tax_payer,
                                           base_invoice_data=base_invoice_data,
@@ -101,7 +118,9 @@ def main(afip_client: Afip | None) -> None:
                                           invoice_number=invoice_number,
                                           since=since.strftime(r"%d/%m/%Y"),
                                           until=until.strftime(r"%d/%m/%Y"),
-                                          overdue=overdue.strftime(r"%d/%m/%Y"))
+                                          overdue=overdue.strftime(r"%d/%m/%Y"),
+                                          qr_code=qr_code,
+                                          validation_url=validation_url)
     
     invoice_html = render_invoice(invoice_data, invoice_services, total_value)
 

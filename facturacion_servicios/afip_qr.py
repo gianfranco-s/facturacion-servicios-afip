@@ -6,20 +6,35 @@ import segno
 
 
 def invoice_validation_url(
-    cuit: int,
-    cae: int,
-    fecha_emision: datetime,
-    tipo_factura_code: int,
-    punto_venta: int,
-    numero_comprobante: int,
-    importe_total: float,
-    tipo_doc_receptor_code: int,
-    numero_doc_receptor: int
+    cuit: int | None = None,
+    cae: int | None = None,
+    fecha_emision: datetime | None = None,
+    tipo_factura_code: int | None = None,
+    punto_venta: int | None = None,
+    numero_comprobante: int | None = None,
+    importe_total: float | None = None,
+    tipo_doc_receptor_code: int | None = None,
+    numero_doc_receptor: int | None = None,
+    is_mock: bool = False,
 ) -> str:
     """
     Returns a Base64-PNG data URI for the AFIP QR validation link,
     built from the form fields.
+
+    Mock values generate a valid URL
     """
+
+    if is_mock:
+        print("WARNING: replacing values with mock")
+        cuit = 23368708194
+        cae = 75314447442077
+        fecha_emision = datetime(2025, 7, 31)
+        tipo_factura_code = 11
+        punto_venta = 1
+        numero_comprobante = 52
+        importe_total = 538473.88
+        tipo_doc_receptor_code = 80
+        numero_doc_receptor = 30626786657
 
     payload = {
         "ver":         1,
@@ -36,6 +51,10 @@ def invoice_validation_url(
         "tipoCodAut":  "E",         # "E" for normal CAE
         "codAut":      cae
     }
+
+    for k, v in payload.items():
+        if v is None:
+            raise ValueError(f"Invalid value of None for field {k} in payload")
 
     compact = json.dumps(payload, separators=(",", ":"))
     b64_json = base64.b64encode(compact.encode("utf-8")).decode("ascii")
