@@ -7,6 +7,7 @@ from facturacion_servicios.afip_enums import (Mes,
                         CondicionFrenteIVA,
                         Consumidor,
                         Contribuyente,
+                        DatosBaseFactura,
                         ServicioPrestado,
                         TipoDeDocumento,
                         TipoFactura,)
@@ -23,22 +24,23 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
         id_nr=23316378609,
         tax_situation=CondicionFrenteIVA.responsable_monotributo,
         email='gianfranco.s@gmail.com',
-        month_billed=month,
-        invoice_type=TipoFactura.factura_c,
-        concept=Concepto.servicios,
-        units=80,
-        unit_amount=19366.40,
         sales_location=2,
         legal_address='Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro',
         id_before_tax=1440000,
         activity_since='01/12/2022',
     )
 
+    base_invoice_data = DatosBaseFactura(
+        month_billed=month,
+        concept=Concepto.servicios,
+        invoice_type=TipoFactura.factura_c,
+    )
+
     invoice_services = [
         ServicioPrestado(
             servicio='Hora de desarrollo',
-            cantidad=gsalomone.units,
-            precio_unit=gsalomone.unit_amount,
+            cantidad=80,
+            precio_unit=19366.40,
             bonif=0.0,
             imp_bonif=0.0,
         ),
@@ -63,31 +65,33 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
     )
 
     current_date = int(datetime.today().strftime("%Y%m%d"))
-    since, until, overdue = get_period(gsalomone.month_billed.value)
+    since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     invoice_number = get_invoice_number(afip_client=afip,
                                         sales_location=gsalomone.sales_location,
-                                        invoice_type=gsalomone.invoice_type)
+                                        invoice_type=base_invoice_data.invoice_type)
 
     data = get_data_for_voucher(contribuyente=gsalomone,
+                                base_invoice_data=base_invoice_data,
                                 consumidor=baitcon,
                                 invoice_number=invoice_number,
                                 date=current_date,
-                                since=since,
-                                until=until,
-                                overdue=overdue,
+                                since=since.strftime(r"%Y%m%d"),
+                                until=until.strftime(r"%Y%m%d"),
+                                overdue=overdue.strftime(r"%Y%m%d"),
                                 importe_total=total_value)
 
     voucher = afip.ElectronicBilling.createVoucher(data)
 
     invoice_data = create_data_for_render(contribuyente=gsalomone,
+                                          base_invoice_data=base_invoice_data,
                                           consumidor=baitcon,
                                           CAE=voucher.get('CAE'),
                                           vencimiento_cae=voucher.get('CAEFchVto'),
                                           invoice_number=invoice_number,
-                                          since=since,
-                                          until=until,
-                                          overdue=overdue)
+                                          since=since.strftime(r"%d/%m/%Y"),
+                                          until=until.strftime(r"%d/%m/%Y"),
+                                          overdue=overdue.strftime(r"%d/%m/%Y"))
     
     invoice_html = render_invoice(invoice_data, invoice_services, total_value)
     current_timestamp = datetime.today().strftime("%Y%m%d")
@@ -149,8 +153,9 @@ def mock_main(month: Mes):
 
 
 if __name__ == '__main__':
-    MOCK = True
-    if MOCK:
+    import os
+    IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
+    if IS_MOCK:
         mock_main(month=Mes.agosto)
 
     else:

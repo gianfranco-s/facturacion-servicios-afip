@@ -2,10 +2,10 @@ from typing import Tuple
 from datetime import datetime, timedelta
 from afip import Afip
 
-from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente
+from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente, DatosBaseFactura
 
 
-def get_period(month: int) -> Tuple[str]:
+def get_period(month: int) -> Tuple[datetime]:
     """Calculates month_first_day, month_last_day, and overdue_date, 10 days after month_last_day"""
     current_year = datetime.now().year
     month_first_day = datetime(current_year, month, 1)
@@ -18,9 +18,7 @@ def get_period(month: int) -> Tuple[str]:
     # Calculate the overdue date (10 days after the last day of the month)
     overdue_date = month_last_day + timedelta(days=10)
     
-    return (month_first_day.strftime(r"%d/%m/%Y"), 
-            month_last_day.strftime(r"%d/%m/%Y"), 
-            overdue_date.strftime(r"%d/%m/%Y"))
+    return (month_first_day, month_last_day, overdue_date)
 
 
 def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: TipoFactura) -> str:
@@ -30,6 +28,7 @@ def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: Tip
 
 
 def get_data_for_voucher(contribuyente: Contribuyente,
+                         base_invoice_data: DatosBaseFactura,
                          consumidor: Consumidor,
                          invoice_number: int,
                          date: int,
@@ -38,12 +37,13 @@ def get_data_for_voucher(contribuyente: Contribuyente,
                          overdue: str,
                          importe_total: float) -> dict:
 
-    if contribuyente.concept == Concepto.productos:
+    if base_invoice_data.concept == Concepto.productos:
         fecha_servicio_desde = None
         fecha_servicio_hasta = None
         fecha_vencimiento_pago = None
 
     else:
+        # Formato valido: aaaammdd
         fecha_servicio_desde = int(since)
         fecha_servicio_hasta = int(until)
         fecha_vencimiento_pago = int(overdue)
@@ -51,8 +51,8 @@ def get_data_for_voucher(contribuyente: Contribuyente,
     return {
         "CantReg": 1, # Cantidad de facturas a registrar
         "PtoVta": contribuyente.sales_location,
-        "CbteTipo": contribuyente.invoice_type.value, 
-        "Concepto": contribuyente.concept.value,
+        "CbteTipo": base_invoice_data.invoice_type.value, 
+        "Concepto": base_invoice_data.concept.value,
         "DocTipo": consumidor.id_type.value,
         "DocNro": consumidor.id_nr,
         "CbteDesde": invoice_number,

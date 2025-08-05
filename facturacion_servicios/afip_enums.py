@@ -60,14 +60,16 @@ class Consumidor:
 
 @dataclass
 class Contribuyente(Consumidor):
-	month_billed: Mes
-	concept: Concepto
-	unit_amount: float
-	units: float
-	invoice_type: TipoFactura
 	sales_location: int  # punto de venta
 	id_before_tax: int
 	activity_since: str
+
+
+@dataclass
+class DatosBaseFactura:
+	month_billed: Mes
+	concept: Concepto
+	invoice_type: TipoFactura
 
 
 @dataclass

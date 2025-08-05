@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 
 from facturacion_servicios import BASEDIR
-from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado
+from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado, DatosBaseFactura
 
 
 def render_invoice(invoice_data: dict,
@@ -67,6 +67,7 @@ def render_pdf(
 
 
 def create_data_for_render(contribuyente: Contribuyente,
+                           base_invoice_data: DatosBaseFactura,
                            consumidor: Consumidor,
                            CAE: str,
                            vencimiento_cae: str,
@@ -77,14 +78,14 @@ def create_data_for_render(contribuyente: Contribuyente,
                            ) -> dict:
     return dict(
         razon_social=contribuyente.full_name,
-        invoice_type=contribuyente.invoice_type.value,
         domicilio_comercial=contribuyente.legal_address,
         condicion_frente_al_iva=contribuyente.tax_situation.name,
         sales_location=contribuyente.sales_location,
-        invoice_number=invoice_number,
         contribuyente_cuit=contribuyente.id_nr,
         id_before_tax=contribuyente.id_before_tax,
         activity_since=contribuyente.activity_since,
+        invoice_type=base_invoice_data.invoice_type.value,
+        invoice_number=invoice_number,
         valid_since=since,
         valid_until=until,
         overdue=overdue,
