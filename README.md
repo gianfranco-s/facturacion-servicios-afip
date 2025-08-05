@@ -22,6 +22,7 @@ Work in progress:
 - [ ] add logging
 - [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
 - [x] add QR code to validate invoice
+- [ ] improve QR rendering
 - [ ] get prod credentials
 
 
