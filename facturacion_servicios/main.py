@@ -77,10 +77,9 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
                                 until=until,
                                 overdue=overdue,
                                 importe_total=total_value)
-    print(data)
+
     voucher = afip.ElectronicBilling.createVoucher(data)
 
-    print(voucher)
     invoice_data = create_data_for_render(contribuyente=gsalomone,
                                           consumidor=baitcon,
                                           CAE=voucher.get('CAE'),
@@ -89,12 +88,13 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
                                           since=since,
                                           until=until,
                                           overdue=overdue)
-    print(invoice_data)
     
     invoice = render_invoice(invoice_data, invoice_services, total_value)
+    print(invoice)
     current_timestamp = datetime.today().strftime("%Y%m%d")
     name = f"factura_gsalomone_baitcon_{current_timestamp}"
-    link = create_invoice_through_afip(afip_client=afip, rendered_html=invoice, file_name=name)
+    link = create_invoice_through_afip(rendered_html=invoice, file_name=name)
+    # link = create_invoice_through_afip(afip_client=afip, rendered_html=invoice, file_name=name)
     print(link)
 
 

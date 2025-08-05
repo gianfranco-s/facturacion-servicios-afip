@@ -1,8 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 from typing import List
 
 from afip import Afip
 from jinja2 import Template
+from weasyprint import HTML, CSS
 
 from facturacion_servicios import BASEDIR
 from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado
@@ -31,22 +33,57 @@ def render_invoice(invoice_data: dict,
     return rendered_html
 
 
-def create_invoice_through_afip(afip_client: Afip, rendered_html: str, file_name: str) -> str:
+def create_invoice_through_afip(rendered_html: str, file_name: str) -> str:
+# def create_invoice_through_afip(afip_client: Afip, rendered_html: str, file_name: str) -> str:
     options = {
-    "width": 8,  # Ancho de pagina en pulgadas. Usar 3.1 para ticket
-    "marginLeft": 0.4,  # Margen izquierdo en pulgadas. Usar 0.1 para ticket 
-    "marginRight": 0.4,  # Margen derecho en pulgadas. Usar 0.1 para ticket 
-    "marginTop": 0.4,  # Margen superior en pulgadas. Usar 0.1 para ticket 
-    "marginBottom": 0.4  # Margen inferior en pulgadas. Usar 0.1 para ticket 
+        "width": 8,  # Ancho de pagina en pulgadas. Usar 3.1 para ticket
+        "marginLeft": 0.4,  # Margen izquierdo en pulgadas. Usar 0.1 para ticket 
+        "marginRight": 0.4,  # Margen derecho en pulgadas. Usar 0.1 para ticket 
+        "marginTop": 0.4,  # Margen superior en pulgadas. Usar 0.1 para ticket 
+        "marginBottom": 0.4  # Margen inferior en pulgadas. Usar 0.1 para ticket 
     }
 
-    res = afip_client.ElectronicBilling.createPDF({
-        "html": rendered_html,
-        "file_name": file_name,
-        "options": options
-    })
+    # res = afip_client.ElectronicBilling.createPDF({
+    #     "html": rendered_html,
+    #     "file_name": file_name,
+    #     "options": options
+    # })
 
-    return res["file"]
+    # return res["file"]
+
+    res = create_pdf( rendered_html, file_name, options=options)
+
+    return res
+
+
+def create_pdf(
+    rendered_html: str,
+    file_name: str,
+    output_dir: str = ".",
+    options: dict | None = None
+) -> str:
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = output_dir / f"{file_name}.pdf"
+
+    html = HTML(string=rendered_html)
+    
+    css_rules = []
+    if options:
+        width_in = options.get("width")
+        # margins in inches:
+        for side in ("Top", "Right", "Bottom", "Left"):
+            key = f"margin{side}"
+            if key in options:
+                css_rules.append(f"@page {{ margin-{side.lower()}: {options[key]}in; }}")
+        if width_in:
+            css_rules.append(f"@page {{ size: {width_in}in auto; }}")
+    css = CSS(string="\n".join(css_rules)) if css_rules else None
+    
+    html.write_pdf(target=str(pdf_path), stylesheets=[css] if css else None)
+    
+    return str(pdf_path)
 
 
 def create_data_for_render(contribuyente: Contribuyente,
