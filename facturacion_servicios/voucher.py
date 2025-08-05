@@ -1,11 +1,37 @@
-from typing import Tuple
 from datetime import datetime, timedelta
 from afip import Afip
 
 from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente, DatosBaseFactura
 
 
-def get_period(month: int) -> Tuple[datetime]:
+def get_cae(afip_client: Afip,
+            tax_payer: Contribuyente,
+            base_invoice_data: DatosBaseFactura,
+            consumer: Consumidor,
+            invoice_number: int,
+            date: datetime,
+            since: datetime,
+            until: datetime,
+            overdue: datetime,
+            total_value: float,
+            ) -> tuple[str]:
+
+    voucher_data = _convert_data_for_voucher(contribuyente=tax_payer,
+                                base_invoice_data=base_invoice_data,
+                                consumidor=consumer,
+                                invoice_number=invoice_number,
+                                date=int(date),
+                                since=since,
+                                until=until,
+                                overdue=overdue,
+                                importe_total=total_value)
+    
+    voucher = afip_client.ElectronicBilling.createVoucher(voucher_data)
+
+    return voucher.get('CAE'), voucher.get('CAEFchVto')
+
+
+def get_period(month: int) -> tuple[datetime]:
     """Calculates month_first_day, month_last_day, and overdue_date, 10 days after month_last_day"""
     current_year = datetime.now().year
     month_first_day = datetime(current_year, month, 1)
@@ -27,16 +53,16 @@ def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: Tip
     return last_voucher + 1
 
 
-def get_data_for_voucher(contribuyente: Contribuyente,
+def _convert_data_for_voucher(contribuyente: Contribuyente,
                          base_invoice_data: DatosBaseFactura,
                          consumidor: Consumidor,
                          invoice_number: int,
-                         date: int,
-                         since: str,
-                         until: str,
-                         overdue: str,
+                         date: datetime,
+                         since: datetime,
+                         until: datetime,
+                         overdue: datetime,
                          importe_total: float) -> dict:
-
+    """Convert invoice data into the values required by ARCA."""
     if base_invoice_data.concept == Concepto.productos:
         fecha_servicio_desde = None
         fecha_servicio_hasta = None
@@ -44,9 +70,9 @@ def get_data_for_voucher(contribuyente: Contribuyente,
 
     else:
         # Formato valido: aaaammdd
-        fecha_servicio_desde = int(since)
-        fecha_servicio_hasta = int(until)
-        fecha_vencimiento_pago = int(overdue)
+        fecha_servicio_desde = int(since.strftime(r"%Y%m%d"))
+        fecha_servicio_hasta = int(until.strftime(r"%Y%m%d"))
+        fecha_vencimiento_pago = int(overdue.strftime(r"%Y%m%d"))
 
     return {
         "CantReg": 1, # Cantidad de facturas a registrar
@@ -57,7 +83,7 @@ def get_data_for_voucher(contribuyente: Contribuyente,
         "DocNro": consumidor.id_nr,
         "CbteDesde": invoice_number,
         "CbteHasta": invoice_number,
-        "CbteFch": date,
+        "CbteFch": int(date),
         "FchServDesde": fecha_servicio_desde,
         "FchServHasta": fecha_servicio_hasta,
         "FchVtoPago": fecha_vencimiento_pago,

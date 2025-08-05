@@ -17,7 +17,7 @@ from facturacion_servicios.afip_enums import (Mes,
                         TipoFactura,)
 from facturacion_servicios.afip_session import afip_session
 from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_data_for_render
-from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
+from facturacion_servicios.voucher import get_cae, get_invoice_number, get_period
 
 
 def __load_legal_person(filepath: Path) -> dict:
@@ -69,38 +69,39 @@ def main(afip: Afip = afip_session) -> None:
 
     consumer = _load_consumer()
 
-    current_date = int(datetime.today().strftime("%Y%m%d"))
+    current_date = datetime.today().strftime("%Y%m%d")
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     invoice_number = get_invoice_number(afip_client=afip,
                                         sales_location=tax_payer.sales_location,
                                         invoice_type=base_invoice_data.invoice_type)
-
-    data = get_data_for_voucher(contribuyente=tax_payer,
-                                base_invoice_data=base_invoice_data,
-                                consumidor=consumer,
-                                invoice_number=invoice_number,
-                                date=current_date,
-                                since=since.strftime(r"%Y%m%d"),
-                                until=until.strftime(r"%Y%m%d"),
-                                overdue=overdue.strftime(r"%Y%m%d"),
-                                importe_total=total_value)
-
-    voucher = afip.ElectronicBilling.createVoucher(data)
+    
+    CAE, vencimiento_cae = get_cae(afip_client=afip,
+                                   tax_payer=tax_payer,
+                                   base_invoice_data=base_invoice_data,
+                                   consumer=consumer,
+                                   invoice_number=invoice_number,
+                                   date=current_date,
+                                   since=since,
+                                   until=until,
+                                   overdue=overdue,
+                                   total_value=total_value)
 
     invoice_data = create_data_for_render(contribuyente=tax_payer,
                                           base_invoice_data=base_invoice_data,
                                           consumidor=consumer,
-                                          CAE=voucher.get('CAE'),
-                                          vencimiento_cae=voucher.get('CAEFchVto'),
+                                          CAE=CAE,
+                                          vencimiento_cae=vencimiento_cae,
                                           invoice_number=invoice_number,
                                           since=since.strftime(r"%d/%m/%Y"),
                                           until=until.strftime(r"%d/%m/%Y"),
                                           overdue=overdue.strftime(r"%d/%m/%Y"))
     
     invoice_html = render_invoice(invoice_data, invoice_services, total_value)
-    current_timestamp = datetime.today().strftime("%Y%m%d")
-    name = f"factura_gsalomone_baitcon_{current_timestamp}"
+
+    consumer_name = consumer.full_name.lower().replace(" ", "_")
+    tax_payer_name = tax_payer.full_name.lower().replace(" ", "_")
+    name = f"{tax_payer_name}_{tax_payer.id_nr}_{invoice_number}_{consumer_name}"
     render_pdf(rendered_html=invoice_html, file_name=name)
     print(name)
 
