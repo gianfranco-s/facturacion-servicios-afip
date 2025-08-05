@@ -28,6 +28,17 @@ def _load_tax_payer(filepath: str = "facturacion_servicios/contribuyente.json") 
     return Contribuyente(**tax_payer_dict)
 
 
+def _load_consumer(filepath: str = "facturacion_servicios/consumidor.json") -> Consumidor:
+    """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
+    TODO: reduce coupling using pydantic"""
+    with open(filepath, "r") as f:
+        consumer_dict = json.load(f)
+    consumer_dict["id_type"] = TipoDeDocumento[consumer_dict["id_type"]]
+    consumer_dict["tax_situation"] = CondicionFrenteIVA[consumer_dict["tax_situation"]]
+    
+    return Consumidor(**consumer_dict)
+
+
 def main(month: Mes, afip: Afip = afip_session) -> None:
 
     tax_payer = _load_tax_payer()
@@ -57,14 +68,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 
     total_value = sum([serv.subtotal for serv in invoice_services])
 
-    baitcon = Consumidor(
-        full_name='BAITCON S.A.',
-        id_type=TipoDeDocumento.cuit,
-        id_nr=30709425389,
-        tax_situation=CondicionFrenteIVA.iva_responsable_inscripto,
-        email='facturas_baitcon@datco.net',
-        legal_address='Jujuy Av. 1956 - Capital Federal, Ciudad de Buenos Aires',
-    )
+    baitcon = _load_consumer()
 
     current_date = int(datetime.today().strftime("%Y%m%d"))
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
@@ -105,6 +109,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 def mock_main(month: Mes):
     """No connection to ARCA API"""
     tax_payer = _load_tax_payer()
+    consumer = _load_consumer()
 
     invoice_services = [
         ServicioPrestado(
@@ -139,10 +144,10 @@ def mock_main(month: Mes):
         valid_since=since.strftime(r"%d/%m/%Y"),
         valid_until=until.strftime(r"%d/%m/%Y"),
         overdue=overdue.strftime(r"%d/%m/%Y"),
-        consumidor_cuit='30709425389',
-        consumidor_name='consumidor S.A.',
-        consumidor_frente_iva='IVA Responsable Inscripto',
-        consumidor_domicilio='Jujuy Av. 1956 - Capital Federal, Ciudad de Buenos Aires',
+        consumidor_cuit=consumer.id_nr,
+        consumidor_name=consumer.full_name,
+        consumidor_frente_iva=consumer.tax_situation.name,
+        consumidor_domicilio=consumer.legal_address,
         CAE='123456abcd',
         vencimiento_cae='22/06/1985',
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
@@ -158,6 +163,7 @@ def mock_main(month: Mes):
 
 
 if __name__ == '__main__':
+    _load_consumer()
     import os
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
     if IS_MOCK:

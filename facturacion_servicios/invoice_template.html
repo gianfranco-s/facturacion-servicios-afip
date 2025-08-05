@@ -167,7 +167,7 @@
             <p class="col-8 margin-b-0"><strong>Apellido y Nombre / Razón social:</strong> {{ consumidor_name }}</p>
           </div>
           <div class="row">
-            <p class="col-6 margin-b-0"><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva }}</p>
+            <p class="col-6 margin-b-0"><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
             <p class="col-6 margin-b-0"><strong>Domicilio:</strong> {{ consumidor_domicilio }}</p>
           </div>
           <!-- wrap this in its own cleared row -->
