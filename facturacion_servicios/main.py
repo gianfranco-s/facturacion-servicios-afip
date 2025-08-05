@@ -123,7 +123,8 @@ def mock_main(month: Mes):
 
     invoice_data = dict(
         razon_social='SALOMONE GIANFRANCO',
-        invoice_type='C',
+        invoice_type=TipoFactura.c.name.upper(),
+        invoice_type_code=TipoFactura.c.value,
         domicilio_comercial='Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro',
         condicion_frente_al_iva='Responsable Monotributo',
         sales_location='00002',
