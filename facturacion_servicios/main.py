@@ -105,7 +105,7 @@ def main(afip: Afip = afip_session) -> None:
     print(name)
 
 
-def mock_main(month: Mes):
+def mock_main():
     """No connection to ARCA API"""
     tax_payer = _load_tax_payer()
     consumer = _load_consumer()
@@ -147,15 +147,11 @@ def mock_main(month: Mes):
 
 
 if __name__ == '__main__':
-    cons = _load_consumer()
-    tp = _load_tax_payer()
-    print(cons)
-    print(tp)
-    # import os
-    # IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
-    # if IS_MOCK:
-    #     mock_main(month=Mes.agosto)
+    import os
+    IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
+    if IS_MOCK:
+        mock_main()
 
-    # else:
-    #     print("WARNING: this communicates with ARCA")
-    #     main(month=Mes.agosto)
+    else:
+        print("WARNING: this communicates with ARCA")
+        main()
