@@ -18,12 +18,13 @@ def get_period(month: int) -> Tuple[str]:
     # Calculate the overdue date (10 days after the last day of the month)
     overdue_date = month_last_day + timedelta(days=10)
     
-    return (month_first_day.strftime(r"%Y%m%d"), 
-            month_last_day.strftime(r"%Y%m%d"), 
-            overdue_date.strftime(r"%Y%m%d"))
+    return (month_first_day.strftime(r"%d/%m/%Y"), 
+            month_last_day.strftime(r"%d/%m/%Y"), 
+            overdue_date.strftime(r"%d/%m/%Y"))
 
 
 def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: TipoFactura) -> str:
+    """Connects to ARCA to find out the last emitted voucher."""
     last_voucher = afip_client.ElectronicBilling.getLastVoucher(sales_location, invoice_type.value)
     return last_voucher + 1
 

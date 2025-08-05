@@ -5,15 +5,15 @@ Basado en [AFIP SDK](https://afipsdk.com/)
 python3 -m facturacion_servicios.main
 
 Work in progress:
-* load personal info from json
-* load consumer info from json
-* perform unit tests (check if tax data is correctly sent to AFIP)
-* generate pdf locally
-* use ',' as decimal separator in final invoice
-* add logs
-* calculate "Importe Otros tributos"
-* calculate "Importe total" as the sum of Subtotal + Importe Otros tributos
-* get prod credentials
+- [ ] load personal info from json
+- [ ] load consumer info from json
+- [ ] perform unit tests (check if tax data is correctly sent to AFIP)
+- [x] generate pdf locally
+- [x] generate mock pdf
+- [x] use ',' as decimal separator in final invoice
+- [ ] add logging
+- [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
+- [ ] get prod credentials
 
 
 # Guía de inicio

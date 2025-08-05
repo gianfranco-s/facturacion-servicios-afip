@@ -96,5 +96,63 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
     print(name)
 
 
+def mock_main(month: Mes):
+    """No connection to ARCA API"""
+    invoice_services = [
+        ServicioPrestado(
+            servicio='Hora de desarrollo',
+            cantidad=4,
+            precio_unit=1234,
+            bonif=0.0,
+            imp_bonif=0.0,
+        ),
+        ServicioPrestado(
+            servicio='Hora de consultoría',
+            cantidad=12,
+            precio_unit=10,
+            bonif=0.0,
+            imp_bonif=0.0,
+        ),
+    ]
+
+    since, until, overdue = get_period(month.value)
+
+    invoice_data = dict(
+        razon_social='SALOMONE GIANFRANCO',
+        invoice_type='C',
+        domicilio_comercial='Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro',
+        condicion_frente_al_iva='Responsable Monotributo',
+        sales_location='00002',
+        invoice_number='00000026',
+        contribuyente_cuit='23316378609',
+        id_before_tax='1440000',
+        activity_since='01/12/2022',
+        valid_since=since,
+        valid_until=until,
+        overdue=overdue,
+        consumidor_cuit='30709425389',
+        consumidor_name='consumidor S.A.',
+        consumidor_frente_iva='IVA Responsable Inscripto',
+        consumidor_domicilio='Jujuy Av. 1956 - Capital Federal, Ciudad de Buenos Aires',
+        CAE='123456abcd',
+        vencimiento_cae='22/06/1985',
+        current_date=datetime.now().strftime(r"%d/%m/%Y"),
+    )
+
+    total_value = sum([serv.subtotal for serv in invoice_services])
+
+    invoice = render_invoice(invoice_data, invoice_services, total_value)
+
+    current_timestamp = datetime.today().strftime("%Y%m%d")
+    name = f"factura_contribuyente_consumidor_{current_timestamp}"
+    render_pdf(rendered_html=invoice, file_name=name)
+
+
 if __name__ == '__main__':
-    main(month=Mes.agosto)
+    MOCK = True
+    if MOCK:
+        mock_main(month=Mes.agosto)
+
+    else:
+        print("WARNING: this communicates with ARCA")
+        main(month=Mes.agosto)
