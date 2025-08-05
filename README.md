@@ -5,7 +5,8 @@ Basado en [AFIP SDK](https://afipsdk.com/)
 python3 -m facturacion_servicios.main
 
 Work in progress:
-- [ ] load personal info from json
+- [x] load personal info from json
+- [ ] load base invoice info from json
 - [ ] load consumer info from json
 - [ ] perform unit tests (check if tax data is correctly sent to AFIP)
 - [x] generate pdf locally
@@ -15,6 +16,21 @@ Work in progress:
 - [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
 - [ ] get prod credentials
 
+
+contribuyente.json
+```json
+{
+    "full_name": "SALOMONE GIANFRANCO",
+    "id_type": "cuit",  # en minúscula, ver TipoDeDocumento
+    "id_nr": 23316378609,
+    "tax_situation": 6,  # ver CondicionFrenteIVA
+    "email": "gianfranco.s@gmail.com",
+    "sales_location": 2,
+    "legal_address": "Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro",
+    "id_before_tax": 1440000,
+    "activity_since": "01/12/2022"
+}
+```
 
 # Guía de inicio
 [Fuente ARCA](https://www.afip.gob.ar/ws/)

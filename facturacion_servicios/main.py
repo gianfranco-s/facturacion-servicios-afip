@@ -1,3 +1,5 @@
+import json
+
 from datetime import datetime
 
 from afip import Afip
@@ -16,19 +18,19 @@ from facturacion_servicios.create_pdf import render_invoice, render_pdf, create_
 from facturacion_servicios.voucher import get_data_for_voucher, get_invoice_number, get_period
 
 
+def _load_tax_payer(filepath: str = "facturacion_servicios/contribuyente.json") -> Contribuyente:
+    """This function is highly coupled with the implementation of TipoDeDocumento and CondicionFrenteIVA
+    TODO: reduce coupling using pydantic"""
+    with open(filepath, "r") as f:
+        tax_payer_dict = json.load(f)
+    tax_payer_dict["id_type"] = TipoDeDocumento[tax_payer_dict["id_type"]]
+    tax_payer_dict["tax_situation"] = CondicionFrenteIVA(tax_payer_dict["tax_situation"])
+    return Contribuyente(**tax_payer_dict)
+
+
 def main(month: Mes, afip: Afip = afip_session) -> None:
 
-    gsalomone = Contribuyente(
-        full_name='SALOMONE GIANFRANCO',
-        id_type=TipoDeDocumento.cuit,
-        id_nr=23316378609,
-        tax_situation=CondicionFrenteIVA.responsable_monotributo,
-        email='gianfranco.s@gmail.com',
-        sales_location=2,
-        legal_address='Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro',
-        id_before_tax=1440000,
-        activity_since='01/12/2022',
-    )
+    tax_payer = _load_tax_payer()
 
     base_invoice_data = DatosBaseFactura(
         month_billed=month,
@@ -68,10 +70,10 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     invoice_number = get_invoice_number(afip_client=afip,
-                                        sales_location=gsalomone.sales_location,
+                                        sales_location=tax_payer.sales_location,
                                         invoice_type=base_invoice_data.invoice_type)
 
-    data = get_data_for_voucher(contribuyente=gsalomone,
+    data = get_data_for_voucher(contribuyente=tax_payer,
                                 base_invoice_data=base_invoice_data,
                                 consumidor=baitcon,
                                 invoice_number=invoice_number,
@@ -83,7 +85,7 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 
     voucher = afip.ElectronicBilling.createVoucher(data)
 
-    invoice_data = create_data_for_render(contribuyente=gsalomone,
+    invoice_data = create_data_for_render(contribuyente=tax_payer,
                                           base_invoice_data=base_invoice_data,
                                           consumidor=baitcon,
                                           CAE=voucher.get('CAE'),
@@ -102,6 +104,8 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
 
 def mock_main(month: Mes):
     """No connection to ARCA API"""
+    tax_payer = _load_tax_payer()
+
     invoice_services = [
         ServicioPrestado(
             servicio='Hora de desarrollo',
@@ -122,19 +126,19 @@ def mock_main(month: Mes):
     since, until, overdue = get_period(month.value)
 
     invoice_data = dict(
-        razon_social='SALOMONE GIANFRANCO',
         invoice_type=TipoFactura.c.name.upper(),
         invoice_type_code=TipoFactura.c.value,
-        domicilio_comercial='Miguel Andén 0 Piso:DPTO Dpto:2 - ElBolson, Río Negro',
-        condicion_frente_al_iva='Responsable Monotributo',
-        sales_location='00002',
+        razon_social=tax_payer.full_name,
+        domicilio_comercial=tax_payer.legal_address,
+        condicion_frente_al_iva=tax_payer.tax_situation.name,
+        sales_location=tax_payer.sales_location,
         invoice_number='00000026',
-        contribuyente_cuit='23316378609',
-        id_before_tax='1440000',
-        activity_since='01/12/2022',
-        valid_since=since,
-        valid_until=until,
-        overdue=overdue,
+        contribuyente_cuit=tax_payer.id_nr,
+        id_before_tax=tax_payer.id_before_tax,
+        activity_since=tax_payer.activity_since,
+        valid_since=since.strftime(r"%d/%m/%Y"),
+        valid_until=until.strftime(r"%d/%m/%Y"),
+        overdue=overdue.strftime(r"%d/%m/%Y"),
         consumidor_cuit='30709425389',
         consumidor_name='consumidor S.A.',
         consumidor_frente_iva='IVA Responsable Inscripto',

@@ -130,7 +130,7 @@
         <div class="text-lg text-center">{{ razon_social }}</div>
         <p><strong>Razón social:</strong> {{ razon_social }}</p>
         <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>
-        <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva }}</p>
+        <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title() }}</p>
       </td>
       <td>
         <div>
