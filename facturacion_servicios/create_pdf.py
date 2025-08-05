@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 
 from facturacion_servicios import BASEDIR
@@ -15,9 +15,13 @@ def render_invoice(invoice_data: dict,
                    template_dir: str = "facturacion_servicios",
                    template_filename: str = 'invoice_template.html',
                    export_file: bool = False) -> str:
-    with open(BASEDIR / template_dir / template_filename, 'r') as f:
-        invoice_template = Template(f.read())
-    
+
+    loader = FileSystemLoader(template_dir)
+    jinja_env = Environment(loader=loader, autoescape=True)
+    jinja_env.filters["money"] = _money
+
+    invoice_template = jinja_env.get_template(template_filename)
+
     data = {
         **invoice_data,
         'invoice_services': invoice_services,
@@ -42,17 +46,10 @@ def render_pdf(
     margin_bottom_cm: float = 1.0,
     margin_left_cm: float = 0.5
 ) -> str:
-    """
-    Render HTML → PDF using WeasyPrint, saving to `{output_dir}/{file_name}.pdf`.
-
-    - page_size: any valid CSS size (named or dimension), defaults to "A4" portrait.
-    - margins in centimeters (cm).
-    """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     pdf_path = output_dir / f"{file_name}.pdf"
 
-    # Build our single @page rule:
     css = f"""
     @page {{
       size: {page_size};
@@ -62,7 +59,6 @@ def render_pdf(
     """
     page_css = CSS(string=css)
 
-    # Render!
     HTML(string=rendered_html).write_pdf(
         target=str(pdf_path),
         stylesheets=[page_css]
@@ -100,6 +96,15 @@ def create_data_for_render(contribuyente: Contribuyente,
         vencimiento_cae=vencimiento_cae,
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
     )
+
+
+def _money(value: float | int) -> str:
+    """
+    Format a float like 1234567.89 → "$ 1.234.567,89"
+    Format a float like 12345 → "$ 1.234,00"
+    """
+    s = f"{value:,.2f}"  # "1,234,567.89"
+    return "$ " + s.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 if __name__ == '__main__':

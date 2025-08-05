@@ -184,10 +184,10 @@
               <td>&nbsp;&nbsp;&nbsp;&nbsp;{{ item.servicio }}</td>
               <td>&nbsp;&nbsp;{{ item.cantidad }}</td>
               <td>&nbsp;&nbsp;{{ item.unidad }}</td>
-              <td>&nbsp;&nbsp;{{ item.precio_unit }}</td>
+              <td>&nbsp;&nbsp;{{ item.precio_unit | money }}</td>
               <td>&nbsp;&nbsp;{{ item.bonif }}</td>
-              <td>&nbsp;&nbsp;{{ item.imp_bonif }}</td>
-              <td>&nbsp;&nbsp;{{ item.subtotal }}</td>
+              <td>&nbsp;&nbsp;{{ item.imp_bonif  | money }}</td>
+              <td>&nbsp;&nbsp;{{ item.subtotal | money }}</td>
             </tr>
             {% endfor %}
           </table>
@@ -199,16 +199,22 @@
       <td colspan="2">
         <div>
           <div class="row text-right">
-            <p class="col-10 margin-b-0"><strong>Subtotal: $</strong></p>
-            <p class="col-2 margin-b-0"><strong>{{ total_value }}</strong></p>
+            <p class="col-12 margin-b-0">
+				<strong>Subtotal: </strong>
+				{{ total_value | money }}
+			</p>
           </div>
           <div class="row text-right">
-            <p class="col-10 margin-b-0"><strong>Importe Otros Tributos: $</strong></p>
-            <p class="col-2 margin-b-0"><strong>0,00</strong></p>
+            <p class="col-12 margin-b-0">
+				<strong>Importe Otros Tributos:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong>
+            	{{ 0.0 | money }}
+			</p>
           </div>
           <div class="row text-right">
-            <p class="col-10 margin-b-0"><strong>Importe total: $</strong></p>
-            <p class="col-2 margin-b-0"><strong>{{ total_value }}</strong></p>
+            <p class="col-12 margin-b-0">
+				<strong>Importe total: </strong>
+            	{{ total_value | money }}
+			</p>
           </div>
         </div>
       </td>

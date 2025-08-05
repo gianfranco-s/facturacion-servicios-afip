@@ -89,11 +89,10 @@ def main(month: Mes, afip: Afip = afip_session) -> None:
                                           until=until,
                                           overdue=overdue)
     
-    invoice = render_invoice(invoice_data, invoice_services, total_value)
-    print(invoice)
+    invoice_html = render_invoice(invoice_data, invoice_services, total_value)
     current_timestamp = datetime.today().strftime("%Y%m%d")
     name = f"factura_gsalomone_baitcon_{current_timestamp}"
-    render_pdf(rendered_html=invoice, file_name=name)
+    render_pdf(rendered_html=invoice_html, file_name=name)
     print(name)
 
 
