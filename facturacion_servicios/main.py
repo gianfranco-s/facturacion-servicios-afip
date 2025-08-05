@@ -58,7 +58,7 @@ def _load_base_invoice_data(filepath: Path = JSON_DIR / "base_invoice_data.json"
     return DatosBaseFactura(**invoice_items_list)
 
 
-def main(afip: Afip = afip_session) -> None:
+def main(afip_client: Afip | None) -> None:
 
     tax_payer = _load_tax_payer()
 
@@ -72,20 +72,26 @@ def main(afip: Afip = afip_session) -> None:
     current_date = datetime.today().strftime("%Y%m%d")
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
-    invoice_number = get_invoice_number(afip_client=afip,
-                                        sales_location=tax_payer.sales_location,
-                                        invoice_type=base_invoice_data.invoice_type)
-    
-    CAE, vencimiento_cae = get_cae(afip_client=afip,
-                                   tax_payer=tax_payer,
-                                   base_invoice_data=base_invoice_data,
-                                   consumer=consumer,
-                                   invoice_number=invoice_number,
-                                   date=current_date,
-                                   since=since,
-                                   until=until,
-                                   overdue=overdue,
-                                   total_value=total_value)
+    if afip_client is not None:
+        print("WARNING: this communicates with ARCA")
+        invoice_number = get_invoice_number(afip_client=afip_client,
+                                            sales_location=tax_payer.sales_location,
+                                            invoice_type=base_invoice_data.invoice_type)
+        
+        CAE, vencimiento_cae = get_cae(afip_client=afip_client,
+                                    tax_payer=tax_payer,
+                                    base_invoice_data=base_invoice_data,
+                                    consumer=consumer,
+                                    invoice_number=invoice_number,
+                                    date=current_date,
+                                    since=since,
+                                    until=until,
+                                    overdue=overdue,
+                                    total_value=total_value)
+    else:
+        invoice_number = '00000026'
+        CAE='123456abcd'
+        vencimiento_cae='22/06/1985'
 
     invoice_data = create_data_for_render(contribuyente=tax_payer,
                                           base_invoice_data=base_invoice_data,
@@ -105,53 +111,9 @@ def main(afip: Afip = afip_session) -> None:
     render_pdf(rendered_html=invoice_html, file_name=file_name)
 
 
-def mock_main():
-    """No connection to ARCA API"""
-    tax_payer = _load_tax_payer()
-    consumer = _load_consumer()
-    invoice_services = _load_invoice_items()
-    total_value = sum([serv.subtotal for serv in invoice_services])
-
-    base_invoice_data = _load_base_invoice_data()
-
-    since, until, overdue = get_period(base_invoice_data.month_billed.value)
-
-    invoice_data = dict(
-        invoice_type=base_invoice_data.invoice_type.name.upper(),
-        invoice_type_code=base_invoice_data.invoice_type.value,
-        razon_social=tax_payer.full_name,
-        domicilio_comercial=tax_payer.legal_address,
-        condicion_frente_al_iva=tax_payer.tax_situation.name,
-        sales_location=tax_payer.sales_location,
-        invoice_number='00000026',
-        contribuyente_cuit=tax_payer.id_nr,
-        id_before_tax=tax_payer.id_before_tax,
-        activity_since=tax_payer.activity_since,
-        valid_since=since.strftime(r"%d/%m/%Y"),
-        valid_until=until.strftime(r"%d/%m/%Y"),
-        overdue=overdue.strftime(r"%d/%m/%Y"),
-        consumidor_cuit=consumer.id_nr,
-        consumidor_name=consumer.full_name,
-        consumidor_frente_iva=consumer.tax_situation.name,
-        consumidor_domicilio=consumer.legal_address,
-        CAE='123456abcd',
-        vencimiento_cae='22/06/1985',
-        current_date=datetime.now().strftime(r"%d/%m/%Y"),
-    )
-
-    invoice = render_invoice(invoice_data, invoice_services, total_value)
-
-    current_date = datetime.today().strftime("%Y%m%d")
-    name = f"factura_contribuyente_consumidor_{current_date}"
-    render_pdf(rendered_html=invoice, file_name=name)
-
-
 if __name__ == '__main__':
     import os
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
-    if IS_MOCK:
-        mock_main()
+    afip_client = afip_session if not IS_MOCK else None
 
-    else:
-        print("WARNING: this communicates with ARCA")
-        main()
+    main(afip_client=afip_client)
