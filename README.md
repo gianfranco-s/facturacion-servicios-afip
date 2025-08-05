@@ -6,8 +6,8 @@ python3 -m facturacion_servicios.main
 
 Work in progress:
 - [x] load personal info from json
-- [ ] load base invoice info from json
-- [ ] load consumer info from json
+- [x] load base invoice info from json
+- [x] load consumer info from json
 - [ ] perform unit tests (check if tax data is correctly sent to AFIP)
 - [x] generate pdf locally
 - [x] generate mock pdf
