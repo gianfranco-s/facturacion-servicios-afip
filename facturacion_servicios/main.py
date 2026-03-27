@@ -5,7 +5,7 @@ from pathlib import Path
 
 from afip import Afip
 
-from facturacion_servicios import JSON_DIR
+from facturacion_servicios.config import JSON_DIR
 from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,

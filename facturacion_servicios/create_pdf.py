@@ -5,7 +5,7 @@ from typing import List
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 
-from facturacion_servicios import BASEDIR
+from facturacion_servicios.config import BASEDIR
 from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado, DatosBaseFactura
 
 

@@ -10,6 +10,7 @@ IS_MOCK=false python3 -m facturacion_servicios.main
 [Web Service de factura electrónica](https://www.afip.gob.ar/ws/documentacion/ws-factura-electronica.asp)
 [Manual para el desarrollador wsfev1](https://www.afip.gob.ar/fe/ayuda/documentos/wsfev1-RG-4291.pdf)
 Basado en [AFIP SDK](https://afipsdk.com/)
+[Guía externa para obtener certificados digitales](https://docs.afipsdk.com/recursos/tutoriales-pagina-de-arca/obtener-certificado-de-produccion)
 
 Work in progress:
 - [x] load personal info from JSON
@@ -23,7 +24,7 @@ Work in progress:
 - [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
 - [x] add QR code to validate invoice
 - [ ] improve QR rendering
-- [ ] get prod credentials
+- [ ] get prod credentials (ver sección "Entorno de producción")
 
 
 <details>
@@ -97,3 +98,39 @@ lkjljk
 ```
 OK. Autorización fue creada (CUITCOMPUTADOR=23316378609, ALIASCOMPUTADOR=gsalomoneDnHomologacion, CUITREPRESENTADO=23316378609, SERVICIO=ws://wsfe, CUITAUTORIZANTE=23316378609).
 ```
+
+## Entorno de producción
+
+Requiere Clave Fiscal nivel 3. El proceso es idéntico al de homologación, pero usando el **Administración de Certificados Digitales** dentro del portal de ARCA en lugar del portal WSASS.
+
+1. Generar private key y CSR (mismos comandos, cambiar nombres de archivo)
+```
+# Private key
+openssl genrsa -out gsalomone-prd-privkey 2048
+# Certificate Signing Request (CSR)
+openssl req -new -key gsalomone-prd-privkey -subj "/C=AR/O=gianfranco-salomone/CN=produccion/serialNumber=CUIT 23316378609" -out gsalomone-prod-req
+```
+
+2. Ingresar a [portal.afip.gob.ar](https://portalcf.cloud.afip.gob.ar) con Clave Fiscal → buscar **"Administrador de Certificados Digitales"**
+
+3. Crear un nuevo "Computador Fiscal":
+   - Alias: `gsalomoneProd` (o el nombre que elijas)
+   - CUIT: `23316378609`
+   - Pegar el texto del CSR (`gsalomone-prod-req`)
+   - Guardar el certificado resultante como `gsalomoneProd.cert`
+
+4. Autorizar el servicio `wsfe` para ese certificado (en el mismo administrador, sección "Autorizar servicio").
+
+5. Actualizar las variables de entorno o `__init__.py` para apuntar a los nuevos archivos:
+```sh
+export AFIP_CERT=gsalomoneProd.cert
+export AFIP_KEY=gsalomone-prd-privkey
+export AFIP_CUIT=23316378609
+```
+
+6. Agregar `"production": True` al inicializar el cliente en `afip_session.py`:
+```python
+afip_session = Afip({"CUIT": CUIT, "cert": cert, "key": key, "production": True})
+```
+
+> **Referencia oficial:** [Certificados Digitales - AFIP](https://www.afip.gob.ar/ws/programadores/certificados-digitales.asp)

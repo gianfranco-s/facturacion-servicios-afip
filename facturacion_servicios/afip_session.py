@@ -1,9 +1,9 @@
 from afip import Afip
 
-from facturacion_servicios import BASEDIR, CERT_FILE, KEY_FILE, CUIT
+from facturacion_servicios.config import CERT_PATH, KEY_PATH, CUIT
 
-cert = open(CERT_FILE).read()
-key = open(KEY_FILE).read()
+cert = open(CERT_PATH).read()
+key = open(KEY_PATH).read()
 
 afip_session = Afip({
     "CUIT": CUIT,
