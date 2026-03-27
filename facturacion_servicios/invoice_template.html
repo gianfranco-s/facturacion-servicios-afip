@@ -12,6 +12,21 @@
       user-select: none;
     }
 
+    .copy-block {
+      page-break-after: always;
+    }
+    .copy-block:last-child {
+      page-break-after: avoid;
+    }
+
+    .copy-label {
+      text-align: center;
+      font-family: sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
     .bill-container {
       width: 750px;
       margin: auto;
@@ -44,17 +59,17 @@
       font-weight: 600;
     }
 
-	.bill-type-caption {
-	  position: absolute;
-	  top: 52px;       /* 50px height + 2px gap */
-	  left: 0;
-	  right: 0;
-	  margin: auto;
-	  font-size: 12px; /* or whatever “small” means to you */
-	  font-weight: normal;
-	  text-align: center;
-	  color: #333;     /* optional: a slightly muted color */
-	}
+    .bill-type-caption {
+      position: absolute;
+      top: 52px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      font-size: 12px;
+      font-weight: normal;
+      text-align: center;
+      color: #333;
+    }
 
     .text-lg { font-size: 30px; }
     .text-center { text-align: center; }
@@ -77,15 +92,13 @@
     .margin-b-0  { margin-bottom: 0; }
     .margin-b-10 { margin-bottom: 10px; }
 
-    /* replace your old bill-row styles: */
     .bill-row td > div {
       border-top:    1px solid;
       border-bottom: 1px solid;
-      margin:        0;       /* kill the negative margins */
-      padding:       10px;    /* give some breathing room */
-      overflow:      auto;    /* contain floated .col-* children */
+      margin:        0;
+      padding:       10px;
+      overflow:      auto;
     }
-    /* ensure any <p> inside is cleared of floats */
     .bill-row td > div p {
       clear: both;
       margin-top: 10px;
@@ -115,134 +128,148 @@
       border-width: 2px;
     }
 
-    .row-qrcode td {
-      padding: 10px;
+    .row-footer {
+      width: 100%;
+      display: table;
+      margin-top: 4px;
     }
-    #qrcode { width: 50%; }
+    .row-footer td {
+      vertical-align: middle;
+      padding: 6px;
+    }
+    .footer-qr {
+      width: 80px;
+    }
+    .footer-qr img {
+      width: 80px;
+      height: 80px;
+    }
+    .footer-cae {
+      text-align: right;
+      font-family: sans-serif;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
-  <table class="bill-container">
-    <tr class="bill-emitter-row">
-      <td>
-        <div class="bill-type">{{ invoice_type }}</div>
-        <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
-        <div class="text-lg text-center">{{ razon_social }}</div>
-        <p><strong>Razón social:</strong> {{ razon_social }}</p>
-        <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>
-        <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
-      </td>
-      <td>
-        <div>
-          <div class="text-lg">Factura</div>
-          <div class="row">
-            <p class="col-6 margin-b-0"><strong>Punto de Venta:</strong> {{ sales_location }}</p>
-            <p class="col-6 margin-b-0"><strong>Comp. Nro:</strong> {{ invoice_number }}</p>
+  {% for copy_label in ["ORIGINAL", "DUPLICADO", "TRIPLICADO"] %}
+  <div class="copy-block">
+    <div class="copy-label">{{ copy_label }}</div>
+    <table class="bill-container">
+      <tr class="bill-emitter-row">
+        <td>
+          <div class="bill-type">{{ invoice_type }}</div>
+          <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
+          <div class="text-lg text-center">{{ razon_social }}</div>
+          <p><strong>Razón social:</strong> {{ razon_social }}</p>
+          <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>
+          <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
+        </td>
+        <td>
+          <div>
+            <div class="text-lg">Factura</div>
+            <div class="row">
+              <p class="col-6 margin-b-0"><strong>Punto de Venta:</strong> {{ sales_location }}</p>
+              <p class="col-6 margin-b-0"><strong>Comp. Nro:</strong> {{ invoice_number }}</p>
+            </div>
+            <p><strong>Fecha de Emisión:</strong> {{ current_date }}</p>
+            <p><strong>CUIT:</strong> {{ contribuyente_cuit }}</p>
+            <p><strong>Ingresos Brutos:</strong> {{ id_before_tax }}</p>
+            <p><strong>Fecha de Inicio de Actividades:</strong> {{ activity_since }}</p>
           </div>
-          <p><strong>Fecha de Emisión:</strong> {{ current_date }}</p>
-          <p><strong>CUIT:</strong> {{ contribuyente_cuit }}</p>
-          <p><strong>Ingresos Brutos:</strong> {{ id_before_tax }}</p>
-          <p><strong>Fecha de Inicio de Actividades:</strong> {{ activity_since }}</p>
-        </div>
-      </td>
-    </tr>
+        </td>
+      </tr>
 
-    <tr class="bill-row">
-      <td colspan="2">
-        <div>
-          <div class="row">
-            <p class="col-4 margin-b-0"><strong>Período Facturado Desde:</strong> {{ valid_since }}</p>
-            <p class="col-3 margin-b-0"><strong>Hasta:</strong> {{ valid_until }}</p>
-            <p class="col-5 margin-b-0"><strong>Fecha de Vto. para el pago:</strong> {{ overdue }}</p>
+      <tr class="bill-row">
+        <td colspan="2">
+          <div>
+            <div class="row">
+              <p class="col-4 margin-b-0"><strong>Período Facturado Desde:</strong> {{ valid_since }}</p>
+              <p class="col-3 margin-b-0"><strong>Hasta:</strong> {{ valid_until }}</p>
+              <p class="col-5 margin-b-0"><strong>Fecha de Vto. para el pago:</strong> {{ overdue }}</p>
+            </div>
           </div>
-        </div>
-      </td>
-    </tr>
+        </td>
+      </tr>
 
-    <tr class="bill-row">
-      <td colspan="2">
-        <div>
-          <div class="row">
-            <p class="col-4 margin-b-0"><strong>CUIT:</strong> {{ consumidor_cuit }}</p>
-            <p class="col-8 margin-b-0"><strong>Apellido y Nombre / Razón social:</strong> {{ consumidor_name }}</p>
+      <tr class="bill-row">
+        <td colspan="2">
+          <div>
+            <div class="row">
+              <p class="col-4 margin-b-0"><strong>CUIT:</strong> {{ consumidor_cuit }}</p>
+              <p class="col-8 margin-b-0"><strong>Apellido y Nombre / Razón social:</strong> {{ consumidor_name }}</p>
+            </div>
+            <div class="row">
+              <p class="col-6 margin-b-0"><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
+              <p class="col-6 margin-b-0"><strong>Domicilio:</strong> {{ consumidor_domicilio }}</p>
+            </div>
+            <div class="row">
+              <p class="margin-b-0"><strong>Condición de venta:</strong> Otra</p>
+            </div>
           </div>
-          <div class="row">
-            <p class="col-6 margin-b-0"><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
-            <p class="col-6 margin-b-0"><strong>Domicilio:</strong> {{ consumidor_domicilio }}</p>
-          </div>
-          <!-- wrap this in its own cleared row -->
-          <div class="row">
-            <p class="margin-b-0"><strong>Condición de venta:</strong> Otra</p>
-          </div>
-        </div>
-      </td>
-    </tr>
+        </td>
+      </tr>
 
-    <tr class="bill-row row-details">
-      <td colspan="2">
-        <div>
-          <table>
+      <tr class="bill-row row-details">
+        <td colspan="2">
+          <div>
+            <table>
+              <tr>
+                <td>Código</td><td>Producto / Servicio</td><td>Cantidad</td>
+                <td>U. Medida</td><td>Precio Unit.</td><td>% Bonif.</td>
+                <td>Imp. Bonif.</td><td>Subtotal</td>
+              </tr>
+              {% for item in invoice_services %}
+              <tr>
+                <td>{{ item.codigo }}</td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;{{ item.servicio }}</td>
+                <td>&nbsp;&nbsp;{{ item.cantidad }}</td>
+                <td>&nbsp;&nbsp;{{ item.unidad }}</td>
+                <td>&nbsp;&nbsp;{{ item.precio_unit | money }}</td>
+                <td>&nbsp;&nbsp;{{ item.bonif }}</td>
+                <td>&nbsp;&nbsp;{{ item.imp_bonif  | money }}</td>
+                <td>&nbsp;&nbsp;{{ item.subtotal | money }}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </td>
+      </tr>
+
+      <tr class="bill-row total-row">
+        <td colspan="2">
+          <div>
+            <div class="row text-right">
+              <p class="col-12 margin-b-0"><strong>Subtotal: </strong>{{ total_value | money }}</p>
+            </div>
+            <div class="row text-right">
+              <p class="col-12 margin-b-0"><strong>Importe Otros Tributos: </strong>{{ 0.0 | money }}</p>
+            </div>
+            <div class="row text-right">
+              <p class="col-12 margin-b-0"><strong>Importe total: </strong>{{ total_value | money }}</p>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="2">
+          <table class="row-footer">
             <tr>
-              <td>Código</td><td>Producto / Servicio</td><td>Cantidad</td>
-              <td>U. Medida</td><td>Precio Unit.</td><td>% Bonif.</td>
-              <td>Imp. Bonif.</td><td>Subtotal</td>
+              <td class="footer-qr">
+                <a href="{{ validation_url }}"><img src="{{ qr_code }}" alt="QR validación"></a>
+              </td>
+              <td class="footer-cae">
+                <div><strong>CAE N°:</strong> {{ CAE }}</div>
+                <div><strong>Fecha de Vto. de CAE:</strong> {{ vencimiento_cae }}</div>
+              </td>
             </tr>
-            {% for item in invoice_services %}
-            <tr>
-              <td>{{ item.codigo }}</td>
-              <td>&nbsp;&nbsp;&nbsp;&nbsp;{{ item.servicio }}</td>
-              <td>&nbsp;&nbsp;{{ item.cantidad }}</td>
-              <td>&nbsp;&nbsp;{{ item.unidad }}</td>
-              <td>&nbsp;&nbsp;{{ item.precio_unit | money }}</td>
-              <td>&nbsp;&nbsp;{{ item.bonif }}</td>
-              <td>&nbsp;&nbsp;{{ item.imp_bonif  | money }}</td>
-              <td>&nbsp;&nbsp;{{ item.subtotal | money }}</td>
-            </tr>
-            {% endfor %}
           </table>
-        </div>
-      </td>
-    </tr>
+        </td>
+      </tr>
 
-    <tr class="bill-row total-row">
-      <td colspan="2">
-        <div>
-          <div class="row text-right">
-            <p class="col-12 margin-b-0">
-				<strong>Subtotal: </strong>
-				{{ total_value | money }}
-			</p>
-          </div>
-          <div class="row text-right">
-            <p class="col-12 margin-b-0">
-				<strong>Importe Otros Tributos:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong>
-            	{{ 0.0 | money }}
-			</p>
-          </div>
-          <div class="row text-right">
-            <p class="col-12 margin-b-0">
-				<strong>Importe total: </strong>
-            	{{ total_value | money }}
-			</p>
-          </div>
-        </div>
-      </td>
-    </tr>
-
-    <tr class="bill-row row-details">
-      <td>
-        <div>
-          <div class="row text-right margin-b-10"><strong>CAE Nº:&nbsp;</strong> {{ CAE }}</div>
-          <div class="row text-right"><strong>Fecha de Vto. de CAE:&nbsp;</strong> {{ vencimiento_cae }}</div>
-		  <div>
-			<div class="row">
-				<a href="{{ validation_url }}">Validación de Factura</a>
-				<img id="qrcode" src="{{ qr_code }}">
-			</div>
-		</div>
-        </div>
-      </td>
-    </tr>
-  </table>
+    </table>
+  </div>
+  {% endfor %}
 </body>
 </html>
