@@ -21,10 +21,10 @@ Work in progress:
 - [x] generate mock pdf
 - [x] use ',' as decimal separator in final invoice
 - [ ] add logging
-- [ ] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos"
+- [x] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos" (N/A para monotributista: ImpTrib=0, ImpIVA=0, ImpTotal=ImpNeto)
 - [x] add QR code to validate invoice
 - [ ] improve QR rendering
-- [ ] get prod credentials (ver sección "Entorno de producción")
+- [x] get prod credentials (ver sección "Entorno de producción")
 
 
 <details>

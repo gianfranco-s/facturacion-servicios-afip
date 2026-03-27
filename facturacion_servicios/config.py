@@ -21,5 +21,6 @@ key_file = {
 }
 
 CERT_PATH = BASEDIR / cert_file.get(ENV_NAME)
-KEY_PATH = BASEDIR / cert_file.get(ENV_NAME)
+KEY_PATH = BASEDIR / key_file.get(ENV_NAME)
 CUIT = 23316378609
+ACCESS_TOKEN = getenv("AFIP_ACCESS_TOKEN")
