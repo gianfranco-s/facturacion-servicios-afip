@@ -5,7 +5,7 @@ from pathlib import Path
 
 from afip import Afip
 
-from facturacion_servicios.config import JSON_DIR
+from facturacion_servicios.config import JSON_DIR, ENV_NAME
 from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,
@@ -59,7 +59,7 @@ def _load_base_invoice_data(filepath: Path = JSON_DIR / "base_invoice_data.json"
     return DatosBaseFactura(**invoice_items_list)
 
 
-def main(afip_client: Afip | None) -> None:
+def main(afip_client: Afip | None, env_name: str) -> None:
 
     tax_payer = _load_tax_payer()
 
@@ -74,7 +74,7 @@ def main(afip_client: Afip | None) -> None:
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     if afip_client is not None:
-        print("WARNING: this communicates with ARCA")
+        print(f"WARNING: this communicates with ARCA {env_name=}")
         invoice_number = get_invoice_number(afip_client=afip_client,
                                             sales_location=tax_payer.sales_location,
                                             invoice_type=base_invoice_data.invoice_type)
@@ -135,4 +135,4 @@ if __name__ == '__main__':
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
     afip_client = afip_session if not IS_MOCK else None
 
-    main(afip_client=afip_client)
+    main(afip_client=afip_client, env_name=ENV_NAME)

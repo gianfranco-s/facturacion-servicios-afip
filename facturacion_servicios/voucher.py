@@ -87,12 +87,14 @@ def _convert_data_for_voucher(contribuyente: Contribuyente,
         "FchServDesde": fecha_servicio_desde,
         "FchServHasta": fecha_servicio_hasta,
         "FchVtoPago": fecha_vencimiento_pago,
+        # Para Factura C (monotributista): ImpNeto = ImpTotal, el resto en cero.
+        # ImpTotal debe ser igual a la suma de todos los campos Imp*.
         "ImpTotal": importe_total,
         "ImpTotConc": 0,  # Importe neto no gravado
         "ImpNeto": importe_total,
         "ImpOpEx": 0,
         "ImpIVA": 0,
-        "ImpTrib": 0,  # Importe total de tributos
+        "ImpTrib": 0,  # Otros tributos (percepciones, etc.) — no aplica a monotributista
         "MonId": "PES",  # Tipo de moneda usada en la factura ("PES" = pesos argentinos)
         "MonCotiz": 1,  # Cotización de la moneda usada (1 para pesos argentinos)
         "CondicionIVAReceptorId": consumidor.tax_situation.value,
