@@ -65,7 +65,7 @@ def invoice_validation_url(
 def generate_qr(qr_url: str) -> str:
     qr = segno.make(qr_url, micro=False)
     buf = io.BytesIO()
-    qr.save(buf, kind="png", scale=2)
+    qr.save(buf, kind="png", scale=5)
     img_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     return f"data:image/png;base64,{img_b64}"
 
