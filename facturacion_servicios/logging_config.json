@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "standard": {
+      "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "WARNING",
+      "formatter": "standard",
+      "stream": "ext://sys.stdout"
+    },
+    "console_app": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "standard",
+      "stream": "ext://sys.stdout"
+    }
+  },
+  "root": {
+    "level": "DEBUG",
+    "handlers": ["console"]
+  },
+  "loggers": {
+    "facturacion_servicios": {
+      "level": "DEBUG",
+      "handlers": ["console_app"],
+      "propagate": false
+    },
+    "__main__": {
+      "level": "DEBUG",
+      "handlers": ["console_app"],
+      "propagate": false
+    }
+  }
+}

@@ -1,8 +1,11 @@
 import json
 import base64
 import io
+import logging
 from datetime import datetime
 import segno
+
+logger = logging.getLogger(__name__)
 
 
 def invoice_validation_url(
@@ -25,7 +28,7 @@ def invoice_validation_url(
     """
 
     if is_mock:
-        print("WARNING: replacing values with mock")
+        logger.warning("replacing values with mock")
         cuit = 23368708194
         cae = 75314447442077
         fecha_emision = datetime(2025, 7, 31)
@@ -71,6 +74,8 @@ def generate_qr(qr_url: str) -> str:
 
 
 if __name__ == "__main__":
+    from facturacion_servicios.logging_conf import setup_logging
+    setup_logging()
     validation_url = invoice_validation_url(
         cuit=23368708194,
         cae=75314447442077,
@@ -82,6 +87,6 @@ if __name__ == "__main__":
         tipo_doc_receptor_code=80,
         numero_doc_receptor=30626786657
     )
-    print(validation_url)
+    logger.info(validation_url)
     qr_data_uri = generate_qr(validation_url)
-    print(qr_data_uri)
+    logger.info(qr_data_uri)

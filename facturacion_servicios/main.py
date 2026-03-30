@@ -1,4 +1,5 @@
 import json
+import logging
 
 from datetime import datetime
 from pathlib import Path
@@ -6,6 +7,9 @@ from pathlib import Path
 from afip import Afip
 
 from facturacion_servicios.config import JSON_DIR, ENV_NAME
+from facturacion_servicios.logging_conf import setup_logging
+
+logger = logging.getLogger(__name__)
 from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,
@@ -62,27 +66,27 @@ def _load_base_invoice_data(filepath: Path = JSON_DIR / "base_invoice_data.json"
 def main(afip_client: Afip | None) -> None:
 
     tax_payer = _load_tax_payer()
-    print(f"Contribuyente: {tax_payer.full_name} (CUIT {tax_payer.id_nr})")
+    logger.info(f"Contribuyente: {tax_payer.full_name} (CUIT {tax_payer.id_nr})")
 
     base_invoice_data = _load_base_invoice_data()
-    print(f"Tipo de factura: {base_invoice_data.invoice_type.name}, concepto: {base_invoice_data.concept.name}, mes: {base_invoice_data.month_billed.name}")
+    logger.info(f"Tipo de factura: {base_invoice_data.invoice_type.name}, concepto: {base_invoice_data.concept.name}, mes: {base_invoice_data.month_billed.name}")
 
     invoice_services = _load_invoice_items()
     total_value = sum([serv.subtotal for serv in invoice_services])
-    print(f"{len(invoice_services)} ítem(s) cargados, total: {total_value:.2f}")
+    logger.info(f"{len(invoice_services)} ítem(s) cargados, total: {total_value:.2f}")
 
     consumer = _load_consumer()
-    print(f"Consumidor: {consumer.full_name} (CUIT {consumer.id_nr})")
+    logger.info(f"Consumidor: {consumer.full_name} (CUIT {consumer.id_nr})")
 
     current_date = datetime.today()
     since, until, overdue = get_period(base_invoice_data.month_billed.value)
 
     if afip_client is not None:
-        print(f"WARNING: Comunicándose con ARCA (a través de servers de afipsdk)")
+        logger.warning("Comunicándose con ARCA (a través de servers de afipsdk)")
         invoice_number = get_invoice_number(afip_client=afip_client,
                                             sales_location=tax_payer.sales_location,
                                             invoice_type=base_invoice_data.invoice_type)
-        print(f"Número de comprobante: {invoice_number}")
+        logger.info(f"Número de comprobante: {invoice_number}")
 
         CAE, vencimiento_cae = get_cae(afip_client=afip_client,
                                     tax_payer=tax_payer,
@@ -94,7 +98,7 @@ def main(afip_client: Afip | None) -> None:
                                     until=until,
                                     overdue=overdue,
                                     total_value=total_value)
-        print(f"CAE recibido: {CAE} (vto. {vencimiento_cae})")
+        logger.info(f"CAE recibido: {CAE} (vto. {vencimiento_cae})")
 
         validation_url = invoice_validation_url(
             cuit=tax_payer.id_nr,
@@ -134,15 +138,16 @@ def main(afip_client: Afip | None) -> None:
     tax_payer_name = tax_payer.full_name.lower().replace(" ", "_").replace(".", "_")
     file_name = f"{tax_payer_name}_{tax_payer.id_nr}_{invoice_number}_{consumer_name}"
     pdf_path = render_pdf(rendered_html=invoice_html, file_name=file_name)
-    print(f"PDF generado: {pdf_path}")
+    logger.info(f"PDF generado: {pdf_path}")
 
 
 if __name__ == '__main__':
     import os
+    setup_logging()
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
     afip_client = afip_session if not IS_MOCK else None
 
-    print(f"==================================")
-    print(f"=========== {ENV_NAME} ===========")
-    print(f"==================================")
+    logger.info("==================================")
+    logger.info(f"=========== {ENV_NAME} ===========")
+    logger.info("==================================")
     main(afip_client=afip_client)
