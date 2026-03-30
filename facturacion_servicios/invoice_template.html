@@ -66,6 +66,7 @@
     }
 
     .text-lg { font-size: 30px; }
+    .text-med { font-size: 20px; }
     .text-center { text-align: center; }
 
     /* grid columns */
@@ -164,7 +165,7 @@
     <table class="bill-container">
       <tr class="bill-emitter-row">
         <td class="emitter-col-left">
-          <div class="text-lg text-center">{{ razon_social }}</div>
+          <div class="text-med text-center">{{ razon_social }}</div>
           <p><strong>Razón social:</strong> {{ razon_social }}</p>
           <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>
           <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
@@ -203,17 +204,19 @@
       <tr class="bill-row">
         <td colspan="3">
           <div>
-            <div class="row">
-              <p class="col-4 margin-b-0"><strong>CUIT:</strong> {{ consumidor_cuit }}</p>
-              <p class="col-8 margin-b-0"><strong>Apellido y Nombre / Razón social:</strong> {{ consumidor_name }}</p>
-            </div>
-            <div class="row">
-              <p class="col-6 margin-b-0"><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
-              <p class="col-6 margin-b-0"><strong>Domicilio:</strong> {{ consumidor_domicilio }}</p>
-            </div>
-            <div class="row">
-              <p class="margin-b-0"><strong>Condición de venta:</strong> Otra</p>
-            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:9px;">
+              <tr>
+                <td style="width:45%"><strong>CUIT:</strong> {{ consumidor_cuit }}</td>
+                <td><strong>Apellido y Nombre / Razón social:</strong> {{ consumidor_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>Condición Frente al IVA:</strong> {{ consumidor_frente_iva.replace("_", " ").title().replace("Iva", "IVA") }}</td>
+                <td><strong>Domicilio:</strong> {{ consumidor_domicilio }}</td>
+              </tr>
+              <tr>
+                <td colspan="2"><strong>Condición de venta:</strong> Otra</td>
+              </tr>
+            </table>
           </div>
         </td>
       </tr>
