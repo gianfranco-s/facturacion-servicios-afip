@@ -8,6 +8,11 @@
       box-sizing: border-box;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
     .copy-block {
       page-break-after: always;
     }
@@ -24,30 +29,27 @@
     }
 
     .bill-container {
-      width: 750px;
-      margin: auto;
+      width: 100%;
+      margin: 0 auto;
       border-collapse: collapse;
       font-family: sans-serif;
       font-size: 11px;
     }
 
-    .bill-emitter-row {
-      position: relative;
-    }
+    /* 3-column header: left | center (type box) | right */
     .bill-emitter-row td {
-      width: 50%;
       border-bottom: 1px solid;
       padding-top: 10px;
       vertical-align: top;
     }
-    .bill-emitter-row td:nth-child(1) { padding-right: 60px; }
-    .bill-emitter-row td:nth-child(2) { padding-left: 60px; }
+    .emitter-col-left  { width: 43%; padding-right: 10px; }
+    .emitter-col-center { width: 14%; text-align: center; padding: 0 5px; }
+    .emitter-col-right { width: 43%; padding-left: 10px; }
 
     .bill-type {
-      position: absolute;
-      top: -1px; left: 0; right: 0;
-      width: 60px; height: 50px;
-      margin: auto;
+      width: 60px;
+      height: 50px;
+      margin: 0 auto;
       background: white;
       border: 1px solid;
       text-align: center;
@@ -56,15 +58,11 @@
     }
 
     .bill-type-caption {
-      position: absolute;
-      top: 52px;
-      left: 0;
-      right: 0;
-      margin: auto;
       font-size: 12px;
       font-weight: normal;
       text-align: center;
       color: #333;
+      margin-top: 2px;
     }
 
     .text-lg { font-size: 30px; }
@@ -124,10 +122,20 @@
       border-width: 2px;
     }
 
+    /* fixed footer — appears at the bottom of every page */
+    .invoice-footer {
+      position: fixed;
+      bottom: -10mm;
+      left: 0;
+      right: 0;
+      border-top: 1px solid;
+      padding-top: 6px;
+      background: white;
+    }
+
     .row-footer {
       width: 100%;
       display: table;
-      margin-top: 4px;
     }
     .row-footer td {
       vertical-align: middle;
@@ -153,31 +161,31 @@
     <div class="copy-label">{{ copy_label }}</div>
     <table class="bill-container">
       <tr class="bill-emitter-row">
-        <td>
-          <div class="bill-type">{{ invoice_type }}</div>
-          <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
+        <td class="emitter-col-left">
           <div class="text-lg text-center">{{ razon_social }}</div>
           <p><strong>Razón social:</strong> {{ razon_social }}</p>
           <p><strong>Domicilio Comercial:</strong> {{ domicilio_comercial }}</p>
           <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
         </td>
-        <td>
-          <div>
-            <div class="text-lg">Factura</div>
-            <div class="row">
-              <p class="col-6 margin-b-0"><strong>Punto de Venta:</strong> {{ sales_location }}</p>
-              <p class="col-6 margin-b-0"><strong>Comp. Nro:</strong> {{ invoice_number }}</p>
-            </div>
-            <p><strong>Fecha de Emisión:</strong> {{ current_date }}</p>
-            <p><strong>CUIT:</strong> {{ contribuyente_cuit }}</p>
-            <p><strong>Ingresos Brutos:</strong> {{ id_before_tax }}</p>
-            <p><strong>Fecha de Inicio de Actividades:</strong> {{ activity_since }}</p>
+        <td class="emitter-col-center">
+          <div class="bill-type">{{ invoice_type }}</div>
+          <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
+        </td>
+        <td class="emitter-col-right">
+          <div class="text-lg">Factura</div>
+          <div class="row">
+            <p class="col-6 margin-b-0"><strong>Punto de Venta:</strong> {{ sales_location }}</p>
+            <p class="col-6 margin-b-0"><strong>Comp. Nro:</strong> {{ invoice_number }}</p>
           </div>
+          <p><strong>Fecha de Emisión:</strong> {{ current_date }}</p>
+          <p><strong>CUIT:</strong> {{ contribuyente_cuit }}</p>
+          <p><strong>Ingresos Brutos:</strong> {{ id_before_tax }}</p>
+          <p><strong>Fecha de Inicio de Actividades:</strong> {{ activity_since }}</p>
         </td>
       </tr>
 
       <tr class="bill-row">
-        <td colspan="2">
+        <td colspan="3">
           <div>
             <div class="row">
               <p class="col-4 margin-b-0"><strong>Período Facturado Desde:</strong> {{ valid_since }}</p>
@@ -189,7 +197,7 @@
       </tr>
 
       <tr class="bill-row">
-        <td colspan="2">
+        <td colspan="3">
           <div>
             <div class="row">
               <p class="col-4 margin-b-0"><strong>CUIT:</strong> {{ consumidor_cuit }}</p>
@@ -207,7 +215,7 @@
       </tr>
 
       <tr class="bill-row row-details">
-        <td colspan="2">
+        <td colspan="3">
           <div>
             <table>
               <tr>
@@ -233,7 +241,7 @@
       </tr>
 
       <tr class="bill-row total-row">
-        <td colspan="2">
+        <td colspan="3">
           <div>
             <div class="row text-right">
               <p class="col-12 margin-b-0"><strong>Subtotal: </strong>{{ total_value | money }}</p>
@@ -248,24 +256,22 @@
         </td>
       </tr>
 
-      <tr>
-        <td colspan="2">
-          <table class="row-footer">
-            <tr>
-              <td class="footer-qr">
-                <a href="{{ validation_url }}"><img src="{{ qr_code }}" alt="QR validación"></a>
-              </td>
-              <td class="footer-cae">
-                <div><strong>CAE N°:</strong> {{ CAE }}</div>
-                <div><strong>Fecha de Vto. de CAE:</strong> {{ vencimiento_cae }}</div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-
     </table>
   </div>
   {% endfor %}
+
+  <div class="invoice-footer">
+    <table class="row-footer">
+      <tr>
+        <td class="footer-qr">
+          <a href="{{ validation_url }}"><img src="{{ qr_code }}" alt="QR validación"></a>
+        </td>
+        <td class="footer-cae">
+          <div><strong>CAE N°:</strong> {{ CAE }}</div>
+          <div><strong>Fecha de Vto. de CAE:</strong> {{ vencimiento_cae }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
 </body>
 </html>
