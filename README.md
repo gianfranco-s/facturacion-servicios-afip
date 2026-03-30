@@ -20,10 +20,10 @@ Work in progress:
 - [x] generate pdf locally
 - [x] generate mock pdf
 - [x] use ',' as decimal separator in final invoice
-- [ ] add logging
+- [x] add logging
 - [x] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos" (N/A para monotributista: ImpTrib=0, ImpIVA=0, ImpTotal=ImpNeto)
 - [x] add QR code to validate invoice
-- [ ] improve QR rendering
+- [x] improve QR rendering
 - [x] get prod credentials (ver sección "Entorno de producción")
 
 
@@ -121,16 +121,37 @@ openssl req -new -key gsalomone-prd-privkey -subj "/C=AR/O=gianfranco-salomone/C
 
 4. Autorizar el servicio `wsfe` para ese certificado (en el mismo administrador, sección "Autorizar servicio").
 
-5. Actualizar las variables de entorno o `__init__.py` para apuntar a los nuevos archivos:
+5. Vincular el certificado al servicio WSFE desde el **Administrador de Relaciones de Clave Fiscal**:
+   - Ir a [arca.gob.ar](https://arca.gob.ar) → login con CUIT y Clave Fiscal
+   - Buscar **"Administrador de Relaciones de Clave Fiscal"**
+   - Click en **"Nueva Relación"**
+   - Completar:
+     - **Representado:** tu CUIT
+     - **Representante:** tu CUIT
+     - **Servicio:** AFIP → Servicios Interactivos → **WSFE - Facturación Electrónica**
+   - Confirmar
+
+7. Actualizar las variables de entorno o `__init__.py` para apuntar a los nuevos archivos:
 ```sh
 export AFIP_CERT=gsalomoneProd.cert
 export AFIP_KEY=gsalomone-prd-privkey
 export AFIP_CUIT=23316378609
 ```
 
-6. Agregar `"production": True` al inicializar el cliente en `afip_session.py`:
+8. Agregar `"production": True` al inicializar el cliente en `afip_session.py`:
 ```python
 afip_session = Afip({"CUIT": CUIT, "cert": cert, "key": key, "production": True})
 ```
 
 > **Referencia oficial:** [Certificados Digitales - AFIP](https://www.afip.gob.ar/ws/programadores/certificados-digitales.asp)
+
+---
+
+> ⚠️ **NEED TO VERIFY**
+>
+> Si al correr la app en producción aparece el error `(11002) El punto de venta no se encuentra habilitado a usar en el presente WS`, el punto de venta no está registrado en AFIP para facturación electrónica. Pasos para habilitarlo:
+>
+> 1. Ir a [arca.gob.ar](https://arca.gob.ar) → login con CUIT y Clave Fiscal
+> 2. Buscar **"Administración de Puntos de Venta"** (o "ABM Puntos de Venta")
+> 3. Crear o habilitar el número de punto de venta que figura en `contribuyente.json` (`sales_location`)
+> 4. Asignarle el servicio **WSFE** como sistema asociado
