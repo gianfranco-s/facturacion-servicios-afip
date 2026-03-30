@@ -66,7 +66,7 @@ def render_pdf(
     return str(pdf_path)
 
 
-def create_data_for_render(contribuyente: Contribuyente,
+def build_template_context(contribuyente: Contribuyente,
                            base_invoice_data: DatosBaseFactura,
                            consumidor: Consumidor,
                            CAE: str,

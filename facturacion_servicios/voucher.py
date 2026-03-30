@@ -1,50 +1,32 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from afip import Afip
 
 from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente, DatosBaseFactura
-
+from facturacion_servicios.afip_invoice_builder import AfipInvoiceData
 
 def get_cae(afip_client: Afip,
-            tax_payer: Contribuyente,
-            base_invoice_data: DatosBaseFactura,
-            consumer: Consumidor,
+            invoice_data: AfipInvoiceData,
             invoice_number: int,
             date: datetime,
             since: datetime,
             until: datetime,
             overdue: datetime,
-            total_value: float,
             ) -> tuple[str]:
     """CAE stands for Código de Autorización Electrónico it has a code and an expiry date."""
-    voucher_data = _convert_data_for_voucher(contribuyente=tax_payer,
-                                base_invoice_data=base_invoice_data,
-                                consumidor=consumer,
+    voucher_data = _convert_data_for_voucher(contribuyente=invoice_data.tax_payer,
+                                base_invoice_data=invoice_data.base_invoice_data,
+                                consumidor=invoice_data.consumer,
                                 invoice_number=invoice_number,
                                 date=date,
                                 since=since,
                                 until=until,
                                 overdue=overdue,
-                                importe_total=total_value)
+                                importe_total=invoice_data.total_value)
     
     voucher = afip_client.ElectronicBilling.createVoucher(voucher_data)
 
     return voucher.get('CAE'), voucher.get('CAEFchVto')
 
-
-def get_period(month: int) -> tuple[datetime]:
-    """Calculates month_first_day, month_last_day, and overdue_date, 10 days after month_last_day"""
-    current_year = datetime.now().year
-    month_first_day = datetime(current_year, month, 1)
-    
-    if month == 12:
-        month_last_day = datetime(current_year + 1, 1, 1) - timedelta(days=1)
-    else:
-        month_last_day = datetime(current_year, month + 1, 1) - timedelta(days=1)
-    
-    # Calculate the overdue date (10 days after the last day of the month)
-    overdue_date = month_last_day + timedelta(days=10)
-    
-    return (month_first_day, month_last_day, overdue_date)
 
 
 def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: TipoFactura) -> str:
