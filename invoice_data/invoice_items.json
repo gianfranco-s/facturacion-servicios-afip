@@ -1,15 +1,8 @@
 [
     {
-        "servicio": "Hora de desarrollo",
-        "cantidad": 80,
-        "precio_unit": 19366.40,
-        "bonif": 0.0,
-        "imp_bonif": 0.0
-    },
-    {
-        "servicio": "Hora de consultoría",
-        "cantidad": 12,
-        "precio_unit": 10,
+        "servicio": "Servicio de desarrollo y consultoría relacionados con servicios informáticos - Marzo",
+        "cantidad": 1,
+        "precio_unit": 1270500.00,
         "bonif": 0.0,
         "imp_bonif": 0.0
     }
