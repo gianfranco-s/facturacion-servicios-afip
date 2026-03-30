@@ -101,20 +101,22 @@
     .row-details table {
       border-collapse: collapse;
       width: 100%;
+      font-size: 9px;
     }
     .row-details table tr:nth-child(1) {
       border-top: 1px solid;
       border-bottom: 1px solid;
       background: #c0c0c0;
       font-weight: bold;
-      text-align: center;
     }
     .row-details table tr + tr {
       border-top: 1px solid #c0c0c0;
     }
     .row-details table td {
       padding: 5px;
+      text-align: right;
     }
+    .row-details table td:nth-child(1) { text-align: left; }
 
     .text-right { text-align: right; }
 
@@ -187,11 +189,13 @@
       <tr class="bill-row">
         <td colspan="3">
           <div>
-            <div class="row">
-              <p class="col-4 margin-b-0"><strong>Período Facturado Desde:</strong> {{ valid_since }}</p>
-              <p class="col-3 margin-b-0"><strong>Hasta:</strong> {{ valid_until }}</p>
-              <p class="col-5 margin-b-0"><strong>Fecha de Vto. para el pago:</strong> {{ overdue }}</p>
-            </div>
+            <table style="width:100%; border-collapse:collapse;">
+              <tr>
+                <td><strong>Período Facturado Desde:</strong> {{ valid_since }}</td>
+                <td><strong>Hasta:</strong> {{ valid_until }}</td>
+                <td style="text-align:right;"><strong>Fecha de Vto. para el pago:</strong> {{ overdue }}</td>
+              </tr>
+            </table>
           </div>
         </td>
       </tr>
@@ -216,27 +220,24 @@
 
       <tr class="bill-row row-details">
         <td colspan="3">
-          <div>
-            <table>
-              <tr>
-                <td>Código</td><td>Producto / Servicio</td><td>Cantidad</td>
-                <td>U. Medida</td><td>Precio Unit.</td><td>% Bonif.</td>
-                <td>Imp. Bonif.</td><td>Subtotal</td>
-              </tr>
-              {% for item in invoice_services %}
-              <tr>
-                <td>{{ item.codigo }}</td>
-                <td>&nbsp;&nbsp;&nbsp;&nbsp;{{ item.servicio }}</td>
-                <td>&nbsp;&nbsp;{{ item.cantidad }}</td>
-                <td>&nbsp;&nbsp;{{ item.unidad }}</td>
-                <td>&nbsp;&nbsp;{{ item.precio_unit | money }}</td>
-                <td>&nbsp;&nbsp;{{ item.bonif }}</td>
-                <td>&nbsp;&nbsp;{{ item.imp_bonif  | money }}</td>
-                <td>&nbsp;&nbsp;{{ item.subtotal | money }}</td>
-              </tr>
-              {% endfor %}
-            </table>
-          </div>
+          <table>
+            <tr>
+              <td style="width:24%">Producto / Servicio</td><td style="width:8%">Cantidad</td>
+              <td style="width:9%">U. Medida</td><td style="width:15%">Precio Unit.</td><td style="width:13%">% Bonif.</td>
+              <td style="width:13%">Imp. Bonif.</td><td style="width:13%">Subtotal</td>
+            </tr>
+            {% for item in invoice_services %}
+            <tr>
+              <td>{{ item.servicio }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>{{ item.unidad }}</td>
+              <td>{{ item.precio_unit }}</td>
+              <td>{{ item.bonif }}</td>
+              <td>{{ item.imp_bonif }}</td>
+              <td>{{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+          </table>
         </td>
       </tr>
 
