@@ -17,6 +17,49 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
+def _get_valid_afip_data(afip_client: Afip, invoice_data: AfipInvoiceData) -> tuple:
+    logger.warning("Comunicándose con ARCA (a través de servers de afipsdk)")
+    tax_payer = invoice_data.tax_payer
+    since, until, overdue = invoice_data.period
+    current_date = datetime.today()
+
+    invoice_number = get_invoice_number(
+        afip_client=afip_client,
+        sales_location=tax_payer.sales_location,
+        invoice_type=invoice_data.base_invoice_data.invoice_type,
+    )
+    logger.info(f"Número de comprobante: {invoice_number}")
+
+    CAE, vencimiento_cae = get_cae(
+        afip_client=afip_client,
+        invoice_data=invoice_data,
+        invoice_number=invoice_number,
+        date=current_date,
+        since=since,
+        until=until,
+        overdue=overdue,
+    )
+    logger.info(f"CAE recibido: {CAE} (vto. {vencimiento_cae})")
+
+    validation_url = invoice_validation_url(
+        cuit=tax_payer.id_nr,
+        cae=int(CAE),
+        fecha_emision=current_date,
+        tipo_factura_code=invoice_data.base_invoice_data.invoice_type.value,
+        punto_venta=tax_payer.sales_location,
+        numero_comprobante=invoice_number,
+        importe_total=invoice_data.total_value,
+        tipo_doc_receptor_code=invoice_data.consumer.id_type.value,
+        numero_doc_receptor=invoice_data.consumer.id_nr,
+    )
+    return invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue
+
+
+def _get_valid_mock_data(invoice_data: AfipInvoiceData, *args, **kwargs) -> tuple:
+    since, until, overdue = invoice_data.period
+    return 52, 75314447442077, '22/06/1985', invoice_validation_url(is_mock=True), since, until, overdue
+
+
 def main(afip_client: Afip | None) -> None:
     builder = AfipInvoiceBuilder(
         consumidor_filepath=JSON_DIR / "consumidor.json",
@@ -27,47 +70,9 @@ def main(afip_client: Afip | None) -> None:
 
     invoice_data: AfipInvoiceData = builder.build()
     logger.info("\n%s", invoice_data)
-    tax_payer = invoice_data.tax_payer
-    base_invoice_data = invoice_data.base_invoice_data
-    invoice_services = invoice_data.invoice_services
-    total_value = invoice_data.total_value
-    consumer = invoice_data.consumer
-    since, until, overdue = invoice_data.period
-    current_date = datetime.today()
 
-    if afip_client is not None:
-        logger.warning("Comunicándose con ARCA (a través de servers de afipsdk)")
-        invoice_number = get_invoice_number(afip_client=afip_client,
-                                            sales_location=invoice_data.tax_payer.sales_location,
-                                            invoice_type=base_invoice_data.invoice_type)
-        logger.info(f"Número de comprobante: {invoice_number}")
-
-        CAE, vencimiento_cae = get_cae(afip_client=afip_client,
-                                    invoice_data=invoice_data,
-                                    invoice_number=invoice_number,
-                                    date=current_date,
-                                    since=since,
-                                    until=until,
-                                    overdue=overdue,)
-        logger.info(f"CAE recibido: {CAE} (vto. {vencimiento_cae})")
-        
-        validation_url = invoice_validation_url(
-            cuit=tax_payer.id_nr,
-            cae=int(CAE),
-            fecha_emision=current_date,
-            tipo_factura_code=invoice_data.base_invoice_data.invoice_type.value,
-            punto_venta=tax_payer.sales_location,
-            numero_comprobante=invoice_number,
-            importe_total=total_value,
-            tipo_doc_receptor_code=consumer.id_type.value,
-            numero_doc_receptor=consumer.id_nr
-        )
-
-    else:
-        invoice_number = 52
-        CAE=75314447442077
-        vencimiento_cae='22/06/1985'
-        validation_url = invoice_validation_url(is_mock=True)
+    get_valid_data_fn = _get_valid_afip_data if afip_client is not None else _get_valid_mock_data
+    invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue = get_valid_data_fn(afip_client=afip_client, invoice_data=invoice_data)
 
     qr_code = generate_qr(validation_url)
 
@@ -101,6 +106,6 @@ if __name__ == '__main__':
     afip_client = afip_session if not IS_MOCK else None
 
     logger.info("==================================")
-    logger.info(f"=========== {ENV_NAME} ===========")
+    logger.info(f"======= Environment: {ENV_NAME} =======")
     logger.info("==================================")
     main(afip_client=afip_client)
