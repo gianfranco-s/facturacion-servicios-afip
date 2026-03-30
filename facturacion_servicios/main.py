@@ -8,7 +8,7 @@ from facturacion_servicios.config import JSON_DIR, ENV_NAME
 from facturacion_servicios.logging_conf import setup_logging
 
 from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
-from facturacion_servicios.afip_session import afip_session
+from facturacion_servicios.afip_session import get_afip_session
 from facturacion_servicios.create_pdf import render_invoice, render_pdf, build_template_context
 from facturacion_servicios.voucher import get_cae, get_invoice_number
 from facturacion_servicios.afip_invoice_builder import AfipInvoiceBuilder, AfipInvoiceData
@@ -101,11 +101,17 @@ def main(afip_client: Afip | None) -> None:
 
 if __name__ == '__main__':
     import os
-    
+    from time import sleep
     IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
-    afip_client = afip_session if not IS_MOCK else None
+    is_production = ENV_NAME == "prd"
 
     logger.info("==================================")
-    logger.info(f"======= Environment: {ENV_NAME} =======")
+    logger.info(f"======= {is_production=} =======")
     logger.info("==================================")
+
+    if is_production:
+        sleep(5)
+
+    afip_client = None if IS_MOCK else get_afip_session(is_production)
+
     main(afip_client=afip_client)

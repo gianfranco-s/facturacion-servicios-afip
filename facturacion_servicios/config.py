@@ -4,7 +4,7 @@ from pathlib import Path
 BASEDIR = Path(__file__).parents[1]
 JSON_DIR = BASEDIR / "invoice_data"
 
-ENV_NAME = getenv("AFIP_ENV", "dev")
+ENV_NAME = getenv("AFIP_ENV", "prd")
 
 VALID_ENV_NAMES = ("dev", "prd")
 if ENV_NAME not in VALID_ENV_NAMES:
