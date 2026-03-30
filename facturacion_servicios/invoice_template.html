@@ -131,7 +131,6 @@
       bottom: -10mm;
       left: 0;
       right: 0;
-      border-top: 1px solid;
       padding-top: 6px;
       background: white;
     }
@@ -244,27 +243,26 @@
         </td>
       </tr>
 
-      <tr class="bill-row total-row">
-        <td colspan="3">
-          <div>
-            <div class="row text-right">
-              <p class="col-12 margin-b-0"><strong>Subtotal: </strong>{{ total_value | money }}</p>
-            </div>
-            <div class="row text-right">
-              <p class="col-12 margin-b-0"><strong>Importe Otros Tributos: </strong>{{ 0.0 | money }}</p>
-            </div>
-            <div class="row text-right">
-              <p class="col-12 margin-b-0"><strong>Importe total: </strong>{{ total_value | money }}</p>
-            </div>
-          </div>
-        </td>
-      </tr>
 
     </table>
   </div>
   {% endfor %}
 
   <div class="invoice-footer">
+    <table style="width:100%; border-collapse:collapse; font-size:14px; font-family:sans-serif; margin-bottom:50px;">
+      <tr>
+        <td style="text-align:right; padding:2px 4px;"><strong>Subtotal:</strong></td>
+        <td style="text-align:right; width:130px; padding:2px 4px;">{{ total_value | money }}</td>
+      </tr>
+      <tr>
+        <td style="text-align:right; padding:2px 4px;"><strong>Importe Otros Tributos:</strong></td>
+        <td style="text-align:right; padding:2px 4px;">{{ 0.0 | money }}</td>
+      </tr>
+      <tr style="border-bottom:2px solid;">
+        <td style="text-align:right; padding:2px 4px 20px;"><strong>Importe total:</strong></td>
+        <td style="text-align:right; padding:2px 4px 20px;">{{ total_value | money }}</td>
+      </tr>
+    </table>
     <table class="row-footer">
       <tr>
         <td class="footer-qr">
