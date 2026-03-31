@@ -143,15 +143,15 @@ export AFIP_CUIT=23316378609
 afip_session = Afip({"CUIT": CUIT, "cert": cert, "key": key, "production": True})
 ```
 
+9. Verificar emisión de comprobantes "hasta el día de ayer" en: arca.gob.ar -> Mis Comprobantes
+
+
 > **Referencia oficial:** [Certificados Digitales - AFIP](https://www.afip.gob.ar/ws/programadores/certificados-digitales.asp)
 
 ---
 
-> ⚠️ **NEED TO VERIFY**
->
 > Si al correr la app en producción aparece el error `(11002) El punto de venta no se encuentra habilitado a usar en el presente WS`, el punto de venta no está registrado en AFIP para facturación electrónica. Pasos para habilitarlo:
 >
 > 1. Ir a [arca.gob.ar](https://arca.gob.ar) → login con CUIT y Clave Fiscal
 > 2. Buscar **"Administración de Puntos de Venta"** -> "ABM Puntos de Venta"
-> 3. Crear o habilitar el número de punto de venta que figura en `contribuyente.json` (`sales_location`)
-> 4. Asignarle el servicio **WSFE** como sistema asociado
+> 3. Verificar el número de punto de venta que figura en `contribuyente.json` (`sales_location`)
