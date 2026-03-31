@@ -4,7 +4,7 @@ from datetime import datetime
 
 from afip import Afip
 
-from facturacion_servicios.config import JSON_DIR, ENV_NAME
+from facturacion_servicios.config import JSON_DIR, ENV_NAME, OUTPUT_DIR
 from facturacion_servicios.logging_conf import setup_logging
 
 from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
@@ -57,7 +57,8 @@ def _get_valid_afip_data(afip_client: Afip, invoice_data: AfipInvoiceData) -> tu
 
 def _get_valid_mock_data(invoice_data: AfipInvoiceData, *args, **kwargs) -> tuple:
     since, until, overdue = invoice_data.period
-    return 52, 75314447442077, '22/06/1985', invoice_validation_url(is_mock=True), since, until, overdue
+    invoice_number, CAE, vencimiento_cae, validation_url = 52, 75314447442077, '22/06/1985', invoice_validation_url(is_mock=True)
+    return invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue
 
 
 def main(afip_client: Afip | None) -> None:
@@ -94,7 +95,7 @@ def main(afip_client: Afip | None) -> None:
 
     consumer_name = invoice_data.consumer.full_name.lower().replace(" ", "_").replace(".", "_")
     tax_payer_name = invoice_data.tax_payer.full_name.lower().replace(" ", "_").replace(".", "_")
-    file_name = f"{tax_payer_name}_{invoice_data.tax_payer.id_nr}_{invoice_number}_{consumer_name}"
+    file_name = OUTPUT_DIR / f"{tax_payer_name}_{invoice_data.tax_payer.id_nr}_{invoice_number}_{consumer_name}"
     pdf_path = render_pdf(rendered_html=invoice_html, file_name=file_name)
     logger.info(f"PDF generado: {pdf_path}")
 

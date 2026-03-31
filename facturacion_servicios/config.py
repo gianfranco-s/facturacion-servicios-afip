@@ -5,6 +5,10 @@ BASEDIR = Path(__file__).parents[1]
 JSON_DIR = BASEDIR / "invoice_data"
 
 ENV_NAME = getenv("AFIP_ENV", "dev")
+OUTPUT_DIR = BASEDIR / f"invoices{'' if ENV_NAME == 'prd' else '-dev'}"
+
+if not OUTPUT_DIR.exists():
+    OUTPUT_DIR.mkdir(parents=True)
 
 VALID_ENV_NAMES = ("dev", "prd")
 if ENV_NAME not in VALID_ENV_NAMES:
