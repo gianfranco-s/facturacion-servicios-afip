@@ -5,7 +5,6 @@ from typing import List
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 
-from facturacion_servicios.config import BASEDIR
 from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado, DatosBaseFactura
 
 
@@ -13,8 +12,7 @@ def render_invoice(invoice_data: dict,
                    invoice_services: List[ServicioPrestado],
                    total_value: float,
                    template_dir: str = "facturacion_servicios",
-                   template_filename: str = 'invoice_template.html',
-                   export_file: bool = False) -> str:
+                   template_filename: str = 'invoice_template.html',) -> str:
 
     loader = FileSystemLoader(template_dir)
     jinja_env = Environment(loader=loader, autoescape=True)
@@ -28,10 +26,6 @@ def render_invoice(invoice_data: dict,
         'total_value': total_value
     }
     rendered_html = invoice_template.render(data)
-
-    if export_file:
-        with open(BASEDIR / "rendered_invoice.html", "w") as exported_file:
-            exported_file.write(rendered_html)
 
     return rendered_html
 
