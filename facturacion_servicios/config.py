@@ -1,35 +1,34 @@
-from os import getenv
 from pathlib import Path
 
-BASEDIR = Path(__file__).parents[1]
-CERTS_DIR = BASEDIR / "certs"
-JSON_DIR = BASEDIR / "invoice_data"
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_NAME = getenv("AFIP_ENV", "dev")
-OUTPUT_DIR = BASEDIR / f"invoices{'' if ENV_NAME == 'prd' else '-dev'}"
-IS_MOCK = getenv("IS_MOCK", "True").lower() in ("1", "true")
 
-if not OUTPUT_DIR.exists():
-    OUTPUT_DIR.mkdir(parents=True)
+class InvoiceSource(BaseSettings):
+    """Path to required resources used to build the invoice"""
+    invoice_source_dir: str = "./invoice_data"
+    consumidor_filepath: str = f"{invoice_source_dir}/consumidor.json"
+    contribuyente_filepath: str = f"{invoice_source_dir}/contribuyente.json"
+    invoice_items_filepath: str = f"{invoice_source_dir}/invoice_items.json"
+    base_invoice_data_filepath: str = f"{invoice_source_dir}/base_invoice_data.json"
 
-VALID_ENV_NAMES = ("dev", "prd")
-if ENV_NAME not in VALID_ENV_NAMES:
-    raise Exception(f"Invalid {ENV_NAME=}. Must be wither of {VALID_ENV_NAMES}.")
 
-IS_PRODUCTION = ENV_NAME == "prd"
+class AfipAuth(BaseSettings):
+    model_config = SettingsConfigDict(env_file="./.env", env_file_encoding="utf-8")
+    key_path: str
+    cert_path: str
+    afip_access_token: SecretStr
+    cuit: str
+    is_production: bool
 
-cert_file = {
-    "dev": "gsalomoneDnHomologacion.cert",
-    "prd": "facturador-py_56aaab496237fb5f.crt",
-}
+class Settings(BaseSettings):
+    is_mock: bool = True
+    output_dir: str = "invoices"
 
-key_file = {
-    "dev": "gsalomone-dev-privkey",
-    "prd": "gsalomone-prd-privkey",
-}
+    if not Path(output_dir).exists:
+        Path(output_dir).mkdir(parents=True)
 
-CERT_PATH = CERTS_DIR / cert_file.get(ENV_NAME)
-KEY_PATH = CERTS_DIR / key_file.get(ENV_NAME)
-CUIT = 23316378609
 
-ACCESS_TOKEN = getenv("AFIP_ACCESS_TOKEN")
+invoice_source = InvoiceSource()
+afip_auth = AfipAuth()
+settings = Settings()

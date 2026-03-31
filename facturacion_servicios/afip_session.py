@@ -1,16 +1,18 @@
 from afip import Afip
+from pydantic import SecretStr
 
-from facturacion_servicios.config import CERT_PATH, KEY_PATH, CUIT, ACCESS_TOKEN
-
-
-def get_afip_session(is_production: bool) -> Afip:
-    cert = open(CERT_PATH).read()
-    key = open(KEY_PATH).read()
+def get_afip_session(cert_path: str,
+                     key_path: str,
+                     cuit: str,
+                     afip_access_token: SecretStr,
+                     is_production: bool) -> Afip:
+    cert = open(cert_path).read()
+    key = open(key_path).read()
 
     return Afip({
-        "CUIT": CUIT,
+        "CUIT": cuit,
         "cert": cert,
         "key": key,
-        "access_token": ACCESS_TOKEN,
+        "access_token": afip_access_token.get_secret_value(),
         "production": is_production
     })

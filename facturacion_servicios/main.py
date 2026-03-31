@@ -2,10 +2,11 @@ import logging
 
 from datetime import datetime
 from time import sleep
+from pathlib import Path
 
 from afip import Afip
 
-from facturacion_servicios.config import JSON_DIR, IS_PRODUCTION, OUTPUT_DIR, IS_MOCK
+from facturacion_servicios.config import settings, afip_auth, invoice_source
 from facturacion_servicios.logging_conf import setup_logging
 from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
 from facturacion_servicios.afip_session import get_afip_session
@@ -61,22 +62,36 @@ def _get_valid_mock_data(invoice_data: AfipInvoiceData, *args, **kwargs) -> tupl
     return invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue
 
 
-def generate_invoice(afip_client: Afip | None) -> None:
-    builder = AfipInvoiceBuilder(
-        consumidor_filepath=JSON_DIR / "consumidor.json",
-        contribuyente_filepath=JSON_DIR / "contribuyente.json",
-        invoice_items_filepath=JSON_DIR / "invoice_items.json",
-        base_invoice_data_filepath=JSON_DIR / "base_invoice_data.json",
-    )
+def _build_output_filepath(output_dir: str,
+                           consumer_name_raw: str,
+                           tax_payer_name_raw: str,
+                           id_nr: str,
+                           invoice_nr: str,
+                           ) -> str:
+    consumer_name = consumer_name_raw.lower().replace(" ", "_").replace(".", "_")
+    tax_payer_name = tax_payer_name_raw.lower().replace(" ", "_").replace(".", "_")
+    return Path(output_dir) / f"{tax_payer_name}_{id_nr}_{invoice_nr}_{consumer_name}"
+
+
+def generate_invoice(afip_client: Afip | None,
+                     invoice_source_files: dict[str, str],
+                     output_dir: Path) -> None:
+    builder = AfipInvoiceBuilder(**invoice_source_files)
 
     invoice_data: AfipInvoiceData = builder.build()
+    logger.info("1. Datos de factura")
     logger.info("\n%s", invoice_data)
+    sleep(5)
 
+
+    logger.info("2. Obteniendo datos de AFIP (nro factura, CAE, vencimiento, URL de validación)")
     get_valid_data_fn = _get_valid_afip_data if afip_client is not None else _get_valid_mock_data
     invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue = get_valid_data_fn(afip_client=afip_client, invoice_data=invoice_data)
 
+    logger.info("3. Generando QR para validación de factura
     qr_code = generate_qr(validation_url)
 
+    logger.info("4. Generando HTML")
     template_context = build_template_context(
         contribuyente=invoice_data.tax_payer,
         base_invoice_data=invoice_data.base_invoice_data,
@@ -93,24 +108,23 @@ def generate_invoice(afip_client: Afip | None) -> None:
 
     invoice_html = render_invoice(template_context, invoice_data.invoice_services, invoice_data.total_value)
 
-    consumer_name = invoice_data.consumer.full_name.lower().replace(" ", "_").replace(".", "_")
-    tax_payer_name = invoice_data.tax_payer.full_name.lower().replace(" ", "_").replace(".", "_")
-    file_name = OUTPUT_DIR / f"{tax_payer_name}_{invoice_data.tax_payer.id_nr}_{invoice_number}_{consumer_name}"
+    logger.info("5. Generando PDF")
+    file_name = _build_output_filepath(output_dir=output_dir,
+                                       consumer_name_raw=invoice_data.consumer.full_name,
+                                       tax_payer_name_raw=invoice_data.tax_payer.full_name,
+                                       id_nr=invoice_data.tax_payer.id_nr,
+                                       invoice_nr=invoice_number)
+
     pdf_path = render_pdf(rendered_html=invoice_html, file_name=file_name)
-    logger.info(f"PDF generado: {pdf_path}")
+    logger.info(f"  PDF generado: {pdf_path}")
 
 
 def main() -> None:
-    logger.info("==================================")
-    logger.info(f"======= {IS_PRODUCTION=} =======")
-    logger.info("==================================")
-
-    if IS_PRODUCTION:
-        sleep(5)
-
-    afip_client = None if IS_MOCK else get_afip_session(is_production=IS_PRODUCTION)
-
-    generate_invoice(afip_client=afip_client)
+    afip_client = None if settings.is_mock else get_afip_session(**afip_auth.model_dump())
+    output_dir = settings.output_dir if afip_auth.is_production else f"{settings.output_dir}-dev"
+    generate_invoice(afip_client=afip_client,
+                     invoice_source_files=invoice_source.model_dump(exclude={"invoice_source_dir"}),
+                     output_dir=output_dir)
 
 
 if __name__ == "__main__":

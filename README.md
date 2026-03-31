@@ -2,7 +2,7 @@
 
 Generar factura:
 ```sh
-IS_MOCK=false python3 -m facturacion_servicios.main
+IS_MOCK=true python3 -m facturacion_servicios.main
 ```
 
 [Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)

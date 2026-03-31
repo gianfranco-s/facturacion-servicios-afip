@@ -9,3 +9,5 @@ uv.lock
 *.crt
 *.pdf
 .env
+.env.dev
+.env.prd
