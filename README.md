@@ -2,29 +2,26 @@
 
 Generar factura:
 ```sh
+python3 -m facturacion_servicios.main
+```
+
+Configurar via `.env` (ver sección "Entorno de producción"). Para mock local:
+```sh
 IS_MOCK=true python3 -m facturacion_servicios.main
 ```
 
-[Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)
-[Documentación ARCA WSASS](https://www.afip.gob.ar/ws/WSASS/html/index.html)
-[Web Service de factura electrónica](https://www.afip.gob.ar/ws/documentacion/ws-factura-electronica.asp)
-[Manual para el desarrollador wsfev1](https://www.afip.gob.ar/fe/ayuda/documentos/wsfev1-RG-4291.pdf)
-Basado en [AFIP SDK](https://afipsdk.com/)
-[Guía externa para obtener certificados digitales](https://docs.afipsdk.com/recursos/tutoriales-pagina-de-arca/obtener-certificado-de-produccion)
+[Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)  
+[Documentación ARCA WSASS](https://www.afip.gob.ar/ws/WSASS/html/index.html)  
+[Web Service de factura electrónica](https://www.afip.gob.ar/ws/documentacion/ws-factura-electronica.asp)  
+[Manual para el desarrollador wsfev1](https://www.afip.gob.ar/fe/ayuda/documentos/wsfev1-RG-4291.pdf)  
+Basado en [AFIP SDK](https://afipsdk.com/)  
+[Guía externa para obtener certificados digitales](https://docs.afipsdk.com/recursos/tutoriales-pagina-de-arca/obtener-certificado-de-produccion)  
 
-Work in progress:
-- [x] load personal info from JSON
-- [x] load base invoice info from JSON
-- [x] load consumer info from JSON
-- [ ] perform unit tests (check if tax data is correctly sent to AFIP)
-- [x] generate pdf locally
-- [x] generate mock pdf
-- [x] use ',' as decimal separator in final invoice
-- [x] add logging
-- [x] calculate "Importe Otros tributos" and "Importe total = Subtotal + Importe Otros tributos" (N/A para monotributista: ImpTrib=0, ImpIVA=0, ImpTotal=ImpNeto)
-- [x] add QR code to validate invoice
-- [x] improve QR rendering
-- [x] get prod credentials (ver sección "Entorno de producción")
+
+Next steps:
+- Identify what can be tested with pytest (unit tests for invoice building, QR URL generation, voucher data conversion, etc.)
+- Dockerize
+- Load invoice data from single JSON
 
 
 <details>
@@ -75,29 +72,41 @@ openssl req -new -key gsalomone-dev-privkey -subj "/C=AR/O=gianfranco-salomone/C
 
 2. Ir a ["Crear DN y certificado"](https://wsass-homo.afip.gob.ar/wsass/portal/Autoservicio/crearcomputador.aspx), y llenar los campos.
 ```
-1. gsalomoneDnHomologacion
-2. 23316378609
-3. # pegar texto del CSR
------BEGIN CERTIFICATE REQUEST-----
-abcn
-sldj
------END CERTIFICATE REQUEST-----
+## campos
+  1. gsalomoneDnHomologacion
+  2. 23316378609
+  3. # pegar texto del CSR
+  -----BEGIN CERTIFICATE REQUEST-----
+  abcn
+  sldj
+  -----END CERTIFICATE REQUEST-----
+  4. Click en "Crear"
 
-4. Click en "Crear"
-# Resultado
-
------BEGIN CERTIFICATE REQUEST-----
-xyz
-lkjljk
------END CERTIFICATE REQUEST-----
+## resultado
+  -----BEGIN CERTIFICATE REQUEST-----
+  xyz
+  lkjljk
+  -----END CERTIFICATE REQUEST-----
 ```
 
-3. Guardar el contenido del resultado en un archivo .pem. Por ejemplo gsalomoneDnHomologacion.pem
+3. Guardar el contenido del resultado en un archivo .crt o .cert. Por ejemplo gsalomoneDnHomologacion.cert
 
 4. Asociar el certificado al Web Service de negocio al que se va a acceder [aquí](https://wsass-homo.afip.gob.ar/wsass/portal/Autoservicio/crearautorizacion.aspx), elegir  `wsfe`, y al momento de ser autorizado, se leerá algo así:
 ```
 OK. Autorización fue creada (CUITCOMPUTADOR=23316378609, ALIASCOMPUTADOR=gsalomoneDnHomologacion, CUITREPRESENTADO=23316378609, SERVICIO=ws://wsfe, CUITAUTORIZANTE=23316378609).
 ```
+
+5. Registrar rutas absolutas de archivos.
+
+8. Crear o actualizar el archivo `.env` en la raíz del proyecto:
+```env
+CERT_PATH=<ruta al cert>
+KEY_PATH=<ruta a la privkey>
+CUIT=tu_cuit
+AFIP_ACCESS_TOKEN=tu_token
+IS_PRODUCTION=false
+```
+
 
 ## Entorno de producción
 
@@ -131,16 +140,15 @@ openssl req -new -key gsalomone-prd-privkey -subj "/C=AR/O=gianfranco-salomone/C
      - **Servicio:** AFIP → Servicios Interactivos → **WSFE - Facturación Electrónica**
    - Confirmar
 
-7. Actualizar las variables de entorno o `__init__.py` para apuntar a los nuevos archivos:
-```sh
-export AFIP_CERT=gsalomoneProd.cert
-export AFIP_KEY=gsalomone-prd-privkey
-export AFIP_CUIT=23316378609
-```
+7. Guardar archivos relevantes (.cert y privkey) y registrar sus rutas absolutas.
 
-8. Agregar `"production": True` al inicializar el cliente en `afip_session.py`:
-```python
-afip_session = Afip({"CUIT": CUIT, "cert": cert, "key": key, "production": True})
+8. Crear o actualizar el archivo `.env` en la raíz del proyecto:
+```env
+CERT_PATH=<ruta al cert>
+KEY_PATH=<ruta a la privkey>
+CUIT=tu_cuit
+AFIP_ACCESS_TOKEN=tu_token
+IS_PRODUCTION=true
 ```
 
 9. Verificar emisión de comprobantes "hasta el día de ayer" en: arca.gob.ar -> Mis Comprobantes
