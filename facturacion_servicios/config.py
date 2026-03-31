@@ -6,6 +6,7 @@ JSON_DIR = BASEDIR / "invoice_data"
 
 ENV_NAME = getenv("AFIP_ENV", "dev")
 OUTPUT_DIR = BASEDIR / f"invoices{'' if ENV_NAME == 'prd' else '-dev'}"
+IS_MOCK = getenv("IS_MOCK", "True").lower() in ("1", "true")
 
 if not OUTPUT_DIR.exists():
     OUTPUT_DIR.mkdir(parents=True)
@@ -13,6 +14,8 @@ if not OUTPUT_DIR.exists():
 VALID_ENV_NAMES = ("dev", "prd")
 if ENV_NAME not in VALID_ENV_NAMES:
     raise Exception(f"Invalid {ENV_NAME=}. Must be wither of {VALID_ENV_NAMES}.")
+
+IS_PRODUCTION = ENV_NAME == "prd"
 
 cert_file = {
     "dev": "gsalomoneDnHomologacion.cert",

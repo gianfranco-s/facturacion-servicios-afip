@@ -1,12 +1,12 @@
 import logging
 
 from datetime import datetime
+from time import sleep
 
 from afip import Afip
 
-from facturacion_servicios.config import JSON_DIR, ENV_NAME, OUTPUT_DIR
+from facturacion_servicios.config import JSON_DIR, IS_PRODUCTION, OUTPUT_DIR, IS_MOCK
 from facturacion_servicios.logging_conf import setup_logging
-
 from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
 from facturacion_servicios.afip_session import get_afip_session
 from facturacion_servicios.create_pdf import render_invoice, render_pdf, build_template_context
@@ -61,7 +61,7 @@ def _get_valid_mock_data(invoice_data: AfipInvoiceData, *args, **kwargs) -> tupl
     return invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue
 
 
-def main(afip_client: Afip | None) -> None:
+def generate_invoice(afip_client: Afip | None) -> None:
     builder = AfipInvoiceBuilder(
         consumidor_filepath=JSON_DIR / "consumidor.json",
         contribuyente_filepath=JSON_DIR / "contribuyente.json",
@@ -100,19 +100,18 @@ def main(afip_client: Afip | None) -> None:
     logger.info(f"PDF generado: {pdf_path}")
 
 
-if __name__ == '__main__':
-    import os
-    from time import sleep
-    IS_MOCK = os.getenv("IS_MOCK", "True").lower() in ("1", "true")
-    is_production = ENV_NAME == "prd"
-
+def main() -> None:
     logger.info("==================================")
-    logger.info(f"======= {is_production=} =======")
+    logger.info(f"======= {IS_PRODUCTION=} =======")
     logger.info("==================================")
 
-    if is_production:
+    if IS_PRODUCTION:
         sleep(5)
 
-    afip_client = None if IS_MOCK else get_afip_session(is_production)
+    afip_client = None if IS_MOCK else get_afip_session(is_production=IS_PRODUCTION)
 
-    main(afip_client=afip_client)
+    generate_invoice(afip_client=afip_client)
+
+
+if __name__ == "__main__":
+    main()
