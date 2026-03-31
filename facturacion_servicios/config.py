@@ -2,6 +2,7 @@ from os import getenv
 from pathlib import Path
 
 BASEDIR = Path(__file__).parents[1]
+CERTS_DIR = BASEDIR / "certs"
 JSON_DIR = BASEDIR / "invoice_data"
 
 ENV_NAME = getenv("AFIP_ENV", "dev")
@@ -27,7 +28,8 @@ key_file = {
     "prd": "gsalomone-prd-privkey",
 }
 
-CERT_PATH = BASEDIR / cert_file.get(ENV_NAME)
-KEY_PATH = BASEDIR / key_file.get(ENV_NAME)
+CERT_PATH = CERTS_DIR / cert_file.get(ENV_NAME)
+KEY_PATH = CERTS_DIR / key_file.get(ENV_NAME)
 CUIT = 23316378609
+
 ACCESS_TOKEN = getenv("AFIP_ACCESS_TOKEN")
