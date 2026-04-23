@@ -29,6 +29,8 @@ class AfipInvoiceData:
     @property
     def period(self) -> tuple[datetime, datetime, datetime]:
         since, until, overdue = _get_period(self.base_invoice_data.month_billed.value)
+        if self.base_invoice_data.overdue_date is not None:
+            overdue = datetime.strptime(self.base_invoice_data.overdue_date, "%Y-%m-%d")
         return since, until, overdue
 
     def __str__(self) -> str:

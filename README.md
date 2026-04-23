@@ -64,7 +64,8 @@ Next steps:
     {
         "month_billed": 8,  # enteros, 1 a 12
         "concept": "servicios",  # ver Concepto
-        "invoice_type": "c"  # ver TipoFactura
+        "invoice_type": "c",  # ver TipoFactura
+        "overdue_date": "2026-04-30"  # opcional, formato YYYY-MM-DD; sobreescribe el cálculo automático (último día del mes + 10 días)
     }
 
     ```

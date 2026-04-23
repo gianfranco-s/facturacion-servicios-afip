@@ -70,6 +70,7 @@ class DatosBaseFactura:
 	month_billed: Mes
 	concept: Concepto
 	invoice_type: TipoFactura
+	overdue_date: str | None = None  # ISO format YYYY-MM-DD; overrides auto-calculated date when set
 
 
 @dataclass
