@@ -5,10 +5,32 @@ Generar factura:
 python3 -m facturacion_servicios.main
 ```
 
-Configurar via `.env` (ver sección "Entorno de producción"). Para mock local:
+## Modos de operación
+
+| Modo | `IS_MOCK` | `IS_PRODUCTION` | Conexión AFIP | Salida | Credenciales |
+|---|---|---|---|---|---|
+| **Mock local** | `true` (default) | — | Ninguna (datos ficticios) | `invoices-dev/` | No requeridas |
+| **Homologación** | `false` | `false` | AFIP sandbox | `invoices-dev/` | Certs de homologación |
+| **Producción** | `false` | `true` | AFIP producción | `invoices/` | Certs de producción |
+
+Los comprobantes en modo mock u homologación incluyen una marca de agua **"COMPROBANTE DE PRUEBA"**.
+
+**Mock local** (sin `.env`):
 ```sh
 IS_MOCK=true python3 -m facturacion_servicios.main
 ```
+
+**Homologación** (ver sección correspondiente para obtener credenciales):
+```sh
+IS_MOCK=false IS_PRODUCTION=false python3 -m facturacion_servicios.main
+```
+
+**Producción** (ver sección correspondiente para obtener credenciales):
+```sh
+IS_MOCK=false IS_PRODUCTION=true python3 -m facturacion_servicios.main
+```
+
+NOTA: tanto entornos de homologación como producción pueden gestionarse tanto con archivo `.env` como con variables de entorno.
 
 [Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)  
 [Documentación ARCA WSASS](https://www.afip.gob.ar/ws/WSASS/html/index.html)  

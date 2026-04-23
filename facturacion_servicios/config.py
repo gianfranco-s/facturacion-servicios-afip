@@ -21,6 +21,7 @@ class AfipAuth(BaseSettings):
     cuit: str
     is_production: bool
 
+
 class Settings(BaseSettings):
     is_mock: bool = True
     output_dir: str = "invoices"

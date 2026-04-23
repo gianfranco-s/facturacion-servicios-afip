@@ -88,7 +88,7 @@ def generate_invoice(afip_client: Afip | None,
     get_valid_data_fn = _get_valid_afip_data if afip_client is not None else _get_valid_mock_data
     invoice_number, CAE, vencimiento_cae, validation_url, since, until, overdue = get_valid_data_fn(afip_client=afip_client, invoice_data=invoice_data)
 
-    logger.info("3. Generando QR para validación de factura
+    logger.info("3. Generando QR para validación de factura")
     qr_code = generate_qr(validation_url)
 
     logger.info("4. Generando HTML")
