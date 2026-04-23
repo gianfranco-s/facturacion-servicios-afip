@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2.0] - 2026-04-23
+
+### Added
+- Watermark for non-production environments
+- Modes documentation (IS_MOCK and IS_PRODUCTION)
+- `overdue` field override
+
 ## [v0.1.0] - 2026-03-31
 
 Initial release. Generates Factura C for monotributistas via AFIP WSFE + AFIPSDK.
