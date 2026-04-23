@@ -11,6 +11,7 @@ from facturacion_servicios.afip_enums import Consumidor, Contribuyente, Servicio
 def render_invoice(invoice_data: dict,
                    invoice_services: List[ServicioPrestado],
                    total_value: float,
+                   watermark_text: str | None = None,
                    template_dir: str = "facturacion_servicios",
                    template_filename: str = 'invoice_template.html',) -> str:
 
@@ -23,7 +24,8 @@ def render_invoice(invoice_data: dict,
     data = {
         **invoice_data,
         'invoice_services': invoice_services,
-        'total_value': total_value
+        'total_value': total_value,
+        'watermark_text': watermark_text,
     }
     rendered_html = invoice_template.render(data)
 
@@ -93,7 +95,7 @@ def build_template_context(contribuyente: Contribuyente,
         vencimiento_cae=vencimiento_cae,
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
         qr_code=qr_code,
-        validation_url=validation_url
+        validation_url=validation_url,
     )
 
 

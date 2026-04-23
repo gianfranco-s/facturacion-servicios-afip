@@ -73,9 +73,18 @@ def _build_output_filepath(output_dir: str,
     return Path(output_dir) / f"{tax_payer_name}_{id_nr}_{invoice_nr}_{consumer_name}"
 
 
+def _get_watermark_text(is_mock: bool, is_production: bool) -> str | None:
+    if is_mock:
+        return "PRUEBA LOCAL"
+    if not is_production:
+        return "HOMOLOGACIÓN"
+    return None
+
+
 def generate_invoice(afip_client: Afip | None,
                      invoice_source_files: dict[str, str],
-                     output_dir: Path) -> None:
+                     output_dir: Path,
+                     watermark_text: str | None = None) -> None:
     builder = AfipInvoiceBuilder(**invoice_source_files)
 
     invoice_data: AfipInvoiceData = builder.build()
@@ -103,10 +112,9 @@ def generate_invoice(afip_client: Afip | None,
         until=until.strftime(r"%d/%m/%Y"),
         overdue=overdue.strftime(r"%d/%m/%Y"),
         qr_code=qr_code,
-        validation_url=validation_url
+        validation_url=validation_url,
     )
-
-    invoice_html = render_invoice(template_context, invoice_data.invoice_services, invoice_data.total_value)
+    invoice_html = render_invoice(template_context, invoice_data.invoice_services, invoice_data.total_value, watermark_text)
 
     logger.info("5. Generando PDF")
     file_name = _build_output_filepath(output_dir=output_dir,
@@ -124,7 +132,8 @@ def main() -> None:
     output_dir = settings.output_dir if afip_auth.is_production else f"{settings.output_dir}-dev"
     generate_invoice(afip_client=afip_client,
                      invoice_source_files=invoice_source.model_dump(exclude={"invoice_source_dir"}),
-                     output_dir=output_dir)
+                     output_dir=output_dir,
+                     watermark_text=_get_watermark_text(settings.is_mock, afip_auth.is_production))
 
 
 if __name__ == "__main__":
