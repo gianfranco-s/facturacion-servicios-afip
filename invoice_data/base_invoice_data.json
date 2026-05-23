@@ -1,6 +1,5 @@
 {
     "month_billed": 4,
     "concept": "servicios",
-    "invoice_type": "nota_de_credito_c",
-    "comprobante_asociado": { "tipo": 11, "pto_vta": 1, "nro": 4 }
+    "invoice_type": "c"
 }
