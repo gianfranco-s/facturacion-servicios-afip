@@ -2,7 +2,7 @@
     {
         "servicio": "Servicio de desarrollo y consultoría relacionados con servicios informáticos - Abril (complemento)",
         "cantidad": 1,
-        "precio_unit": 2219500.00,
+        "precio_unit": 2219500.0,
         "bonif": 0.0,
         "imp_bonif": 0.0
     }

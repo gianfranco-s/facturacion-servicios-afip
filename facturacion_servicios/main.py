@@ -67,10 +67,11 @@ def _build_output_filepath(output_dir: str,
                            tax_payer_name_raw: str,
                            id_nr: str,
                            invoice_nr: str,
+                           sufijo: str = "",
                            ) -> str:
     consumer_name = consumer_name_raw.lower().replace(" ", "_").replace(".", "_")
     tax_payer_name = tax_payer_name_raw.lower().replace(" ", "_").replace(".", "_")
-    return Path(output_dir) / f"{tax_payer_name}_{id_nr}_{invoice_nr}_{consumer_name}"
+    return Path(output_dir) / f"{tax_payer_name}_{id_nr}_{invoice_nr}_{consumer_name}{sufijo}"
 
 
 def _get_watermark_text(is_mock: bool, is_production: bool) -> str | None:
@@ -121,7 +122,8 @@ def generate_invoice(afip_client: Afip | None,
                                        consumer_name_raw=invoice_data.consumer.full_name,
                                        tax_payer_name_raw=invoice_data.tax_payer.full_name,
                                        id_nr=invoice_data.tax_payer.id_nr,
-                                       invoice_nr=invoice_number)
+                                       invoice_nr=invoice_number,
+                                       sufijo=invoice_data.base_invoice_data.invoice_type.sufijo_archivo)
 
     pdf_path = render_pdf(rendered_html=invoice_html, file_name=file_name)
     logger.info(f"  PDF generado: {pdf_path}")

@@ -20,6 +20,13 @@ class TipoFactura(Enum):
 			return "Nota de Crédito"
 		raise ValueError(f"Etiqueta no definida para {self}")
 
+	@property
+	def sufijo_archivo(self) -> str:
+		"""Sufijo para el nombre del archivo PDF generado. Vacío para Factura C."""
+		if self == TipoFactura.nota_de_credito_c:
+			return "_nc"
+		return ""
+
 
 class Concepto(Enum):
 	productos = 1

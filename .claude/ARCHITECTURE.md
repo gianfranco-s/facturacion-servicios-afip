@@ -106,9 +106,11 @@ En modo **mock** (`IS_MOCK=true`), `get_afip_session()` no se llama y los datos 
 ## Decisiones de diseño no obvias
 
 - **Carga de enums desde JSON:** `_load_base_invoice_data` convierte strings a enums usando `Enum[key]` (por nombre) o `Enum(value)` (por valor). Al agregar un nuevo `TipoFactura`, el JSON usa el nombre del miembro (ej. `"nota_de_credito_c"`). `comprobante_asociado` se carga como `ComprobanteAsociado(**dict)` si está presente.
-- **`TipoFactura.letra` / `.etiqueta`:** propiedades del enum que desacoplan la representación visual del valor AFIP. La plantilla usa `invoice_type_letra` (siempre `"C"`) y `document_label` (`"Factura"` o `"Nota de Crédito"`). Al agregar un tipo nuevo, extender ambas propiedades.
+- **`TipoFactura.letra` / `.etiqueta` / `.sufijo_archivo`:** propiedades del enum que desacoplan la representación visual del valor AFIP. La plantilla usa `invoice_type_letra` (siempre `"C"`), `document_label` (`"Factura"` o `"Nota de Crédito"`) y `comprobante_asociado_label` (ej. `"Fac. C: 00001-00000004"`, `None` para Factura). El nombre del archivo PDF usa `sufijo_archivo` (`""` para Factura, `"_nc"` para Nota de Crédito). Al agregar un tipo nuevo, extender las tres propiedades.
 - **`CbtesAsoc` para Nota de Crédito:** `_convert_data_for_voucher` agrega la lista solo si `base_invoice_data.comprobante_asociado` está definido. La librería `afip-py` envuelve la lista en `{"CbteAsoc": [...]}` automáticamente.
 - **`ImpNeto == ImpTotal`:** para monotributistas no hay IVA discriminado; `_convert_data_for_voucher` envía `ImpIVA=0` e `ImpNeto=ImpTotal`. Aplica tanto a Factura C como a Nota de Crédito C. No cambiar sin verificar contra WSFE.
+- **Overdue clamp (AFIP error 10036):** `_get_period()` en `afip_invoice_builder.py` calcula `overdue_date` como el último día del mes + 10 días, pero lo clampea a `max(..., hoy)`. Necesario porque AFIP rechaza comprobantes con `FchVtoPago` anterior a la fecha de emisión (error 10036). Aplica cuando se emite un comprobante de un mes ya vencido (ej. nota de crédito de abril emitida en mayo).
+- **Reintentos ante errores de red (`voucher.py`):** El decorador `reintentar_en_red` envuelve `get_cae` y `get_invoice_number` (3 intentos, 2 s de espera). Captura `socket.gaierror`, `ConnectionError`, `OSError`, `TimeoutError` — errores de DNS/red transientes típicos de afipsdk. No captura errores de negocio de AFIP (son excepciones de otro tipo).
 
 ---
 
@@ -139,7 +141,7 @@ El resto del flujo (ítems, contribuyente, consumidor) es idéntico al de una Fa
 
 ### Agregar un nuevo tipo de comprobante
 
-1. **`afip_enums.py`** → agregar miembro a `TipoFactura` con el código AFIP; extender propiedades `letra` y `etiqueta`
+1. **`afip_enums.py`** → agregar miembro a `TipoFactura` con el código AFIP; extender propiedades `letra`, `etiqueta` y `sufijo_archivo`
 2. Si requiere comprobante asociado, ya está soportado vía `comprobante_asociado` en `DatosBaseFactura`
 3. **`voucher.py`** → `CbteTipo` se toma de `invoice_type.value` automáticamente; sin cambios salvo lógica de importes nueva
 4. **`afip_qr.py`** → sin cambios

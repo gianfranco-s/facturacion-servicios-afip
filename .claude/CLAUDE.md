@@ -12,7 +12,7 @@
 - Every plan you make should be preceded by an abstract of no more than 10 lines, explaining the plan.
 
 ### Funcionalidades
-- Generar Nota de Crédito (además de Factura)
+- Mejorar preguntas de las SKILLS
 - Historial y sugerencias de datos
   - Importar datos de comprobantes anteriores y almacenarlos localmente (ej. SQLite o JSON persistente)
   - Al generar un nuevo comprobante, sugerir valores usados previamente: número de comprobante, cliente, importe, período, etc.
@@ -26,4 +26,4 @@
 
 ### Implementadas
 - Mejorar transición entre entornos de producción y homologación
-- 
+- Generar Nota de Crédito

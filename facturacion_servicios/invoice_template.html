@@ -233,6 +233,16 @@
         </td>
       </tr>
 
+      {% if comprobante_asociado_label %}
+      <tr class="bill-row">
+        <td colspan="3">
+          <div>
+            <strong>Comprobante Asociado:</strong> {{ comprobante_asociado_label }}
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+
       <tr class="bill-row row-details">
         <td colspan="3">
           <table>
