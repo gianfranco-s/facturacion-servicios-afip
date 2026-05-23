@@ -1,6 +1,5 @@
 {
-    "month_billed": 3,
+    "month_billed": 4,
     "concept": "servicios",
-    "invoice_type": "c",
-    "overdue_date": "2026-04-30"
+    "invoice_type": "c"
 }
