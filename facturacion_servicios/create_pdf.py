@@ -5,7 +5,7 @@ from typing import List
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML, CSS
 
-from facturacion_servicios.afip_enums import Consumidor, Contribuyente, ServicioPrestado, DatosBaseFactura
+from facturacion_servicios.afip_enums import ComprobanteAsociado, Consumidor, Contribuyente, ServicioPrestado, DatosBaseFactura
 
 
 def render_invoice(invoice_data: dict,
@@ -18,6 +18,7 @@ def render_invoice(invoice_data: dict,
     loader = FileSystemLoader(template_dir)
     jinja_env = Environment(loader=loader, autoescape=True)
     jinja_env.filters["money"] = _money
+    jinja_env.filters["num_format"] = _num_format
 
     invoice_template = jinja_env.get_template(template_filename)
 
@@ -97,7 +98,29 @@ def build_template_context(contribuyente: Contribuyente,
         current_date=datetime.now().strftime(r"%d/%m/%Y"),
         qr_code=qr_code,
         validation_url=validation_url,
+        comprobante_asociado_label=_format_comprobante_asociado_label(base_invoice_data.comprobante_asociado),
     )
+
+
+def _format_comprobante_asociado_label(ca: ComprobanteAsociado | None) -> str | None:
+    """
+    Formatea la referencia al comprobante original para mostrar en el PDF.
+    Ej: ComprobanteAsociado(tipo=11, pto_vta=1, nro=4) → "Fac. C: 00001-00000004"
+    """
+    if ca is None:
+        return None
+    _tipo_labels = {
+        11: "Fac. C",
+        13: "N.Cred. C",
+    }
+    label = _tipo_labels.get(ca.tipo, f"Tipo {ca.tipo}")
+    return f"{label}: {ca.pto_vta:05d}-{ca.nro:08d}"
+
+
+def _num_format(value: float | int) -> str:
+    """Format 1150000.0 → '1.150.000,00' (sin símbolo de moneda)."""
+    s = f"{value:,.2f}"
+    return s.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _money(value: float | int) -> str:
