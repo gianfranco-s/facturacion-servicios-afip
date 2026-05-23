@@ -4,7 +4,7 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-__EXISTING_ENV_FILES = (".env.dev", ".env.prd")
+EXISTING_ENV_FILES = (".env.dev", ".env.prd")
 
 class ConfigEntorno(BaseSettings):
     entorno: str  # used to select .env.<entorno>
@@ -12,8 +12,8 @@ class ConfigEntorno(BaseSettings):
     @property
     def env_file(self) -> str:
         env_file = f".env.{self.entorno}"
-        if env_file not in __EXISTING_ENV_FILES:
-            raise Exception(f"{env_file} is not within existing env files: {__EXISTING_ENV_FILES}")
+        if env_file not in EXISTING_ENV_FILES:
+            raise Exception(f"{env_file} is not within existing env files: {EXISTING_ENV_FILES}")
         return env_file
 
 

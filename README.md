@@ -1,9 +1,41 @@
 # Factura Monotributista
 
-Generar factura:
+## Generar una Factura C
+
+Editar `invoice_data/base_invoice_data.json`:
+```json
+{
+  "month_billed": 4,
+  "concept": "servicios",
+  "invoice_type": "c"
+}
+```
+
 ```sh
 ENTORNO=dev python3 -m facturacion_servicios.main
 ```
+
+## Generar una Nota de Crédito C
+
+Editar `invoice_data/base_invoice_data.json` indicando el comprobante original a referenciar:
+```json
+{
+  "month_billed": 4,
+  "concept": "servicios",
+  "invoice_type": "nota_de_credito_c",
+  "comprobante_asociado": {
+    "tipo": 11,
+    "pto_vta": 1,
+    "nro": 52
+  }
+}
+```
+
+```sh
+ENTORNO=dev python3 -m facturacion_servicios.main
+```
+
+El resto de los archivos (`contribuyente.json`, `consumidor.json`, `invoice_items.json`) se completan igual que para una factura. Ver [use-cases/emitir_nota_de_credito.md](use-cases/emitir_nota_de_credito.md) para más detalle.
 
 ## Modos de operación
 
