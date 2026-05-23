@@ -2,11 +2,12 @@
 
 ## [v0.3.0] - 2026-05-23
 
-
 ### Added
 - ARCHITECTURE.md
 - CLAUDE.md
 - string-based selection for environment files
+- Claude Skills to generate Factura and NotaDeCredito
+- Use cases and their automations
 
 
 ## [v0.2.0] - 2026-04-23
