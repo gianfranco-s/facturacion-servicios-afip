@@ -7,9 +7,13 @@
 ## Próximos pasos
 
 ## Agent instructions
-- To begin with, read ARCHITECTURE.md
-- If changes made by user or agent can affect ARCHITECTURE.md changes, update said file.
+- To begin with, read `.claude/ARCHITECTURE.md`
+- If changes made by user or agent can affect `.claude/ARCHITECTURE.md`, update said file.
 - Every plan you make should be preceded by an abstract of no more than 10 lines, explaining the plan.
+
+## Design decisions
+- Currently based in AFIPSDK(afip-py) package. Will eventually change it to avoid costs.
+- Ponder if a new feature requires using AFIPSDK(afip-py). If implementation is simple, avoid AFIPSDK.
 
 ### Funcionalidades
 - Mejorar preguntas de las SKILLS

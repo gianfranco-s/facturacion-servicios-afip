@@ -7,7 +7,7 @@ from datetime import datetime
 
 from facturacion_servicios.afip_enums import TipoFactura
 from facturacion_servicios.create_pdf import build_template_context
-from facturacion_servicios.voucher import _convert_data_for_voucher
+from facturacion_servicios.voucher import _convert_data_for_voucher, get_invoice_number, get_cae
 
 
 class TestDatosFactura:
@@ -61,6 +61,38 @@ class TestVoucherWSFE:
 
     def test_sin_cbtes_asoc(self, voucher):
         assert "CbtesAsoc" not in voucher
+
+
+class TestOrquestacionVoucher:
+    """get_invoice_number y get_cae orquestan correctamente el PuertoAFIP."""
+
+    def test_numero_comprobante_es_ultimo_mas_uno(self, mock_afip, invoice_data_factura):
+        numero = get_invoice_number(mock_afip,
+                                    sales_location=invoice_data_factura.tax_payer.sales_location,
+                                    invoice_type=invoice_data_factura.base_invoice_data.invoice_type)
+        assert numero == 52  # ultimo_comprobante=51 + 1
+
+    def test_get_invoice_number_consulta_punto_venta_correcto(self, mock_afip, invoice_data_factura):
+        get_invoice_number(mock_afip,
+                           sales_location=invoice_data_factura.tax_payer.sales_location,
+                           invoice_type=invoice_data_factura.base_invoice_data.invoice_type)
+        punto_venta, _ = mock_afip.llamadas_obtener[0]
+        assert punto_venta == invoice_data_factura.tax_payer.sales_location
+
+    def test_get_cae_retorna_cae_y_vencimiento(self, mock_afip, invoice_data_factura):
+        since, until, overdue = invoice_data_factura.period
+        cae, vencimiento = get_cae(mock_afip, invoice_data_factura,
+                                   invoice_number=1, date=datetime(2026, 4, 30),
+                                   since=since, until=until, overdue=overdue)
+        assert cae == mock_afip.cae
+        assert vencimiento == mock_afip.vencimiento_cae
+
+    def test_get_cae_invoca_crear_comprobante_una_vez(self, mock_afip, invoice_data_factura):
+        since, until, overdue = invoice_data_factura.period
+        get_cae(mock_afip, invoice_data_factura,
+                invoice_number=1, date=datetime(2026, 4, 30),
+                since=since, until=until, overdue=overdue)
+        assert len(mock_afip.llamadas_crear) == 1
 
 
 class TestContextoTemplate:

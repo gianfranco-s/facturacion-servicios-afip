@@ -16,6 +16,44 @@ from facturacion_servicios.afip_enums import (
 from facturacion_servicios.afip_invoice_builder import AfipInvoiceData
 
 
+# ---------------------------------------------------------------------------
+# Mock del puerto AFIP — permite testear voucher.py sin llamar al SDK real
+# ---------------------------------------------------------------------------
+
+class MockPuertoAFIP:
+    """Doble de test que implementa PuertoAFIP en memoria.
+
+    Registra las llamadas recibidas para que los tests puedan inspeccionarlas.
+    """
+
+    def __init__(self, ultimo_comprobante: int = 51,
+                 cae: str = "75314447442077",
+                 vencimiento_cae: str = "2026-05-10") -> None:
+        self.ultimo_comprobante = ultimo_comprobante
+        self.cae = cae
+        self.vencimiento_cae = vencimiento_cae
+        # registros de llamadas
+        self.llamadas_obtener: list[tuple] = []
+        self.llamadas_crear: list[dict] = []
+
+    def obtener_ultimo_comprobante(self, punto_venta: int, tipo_comprobante: int) -> int:
+        self.llamadas_obtener.append((punto_venta, tipo_comprobante))
+        return self.ultimo_comprobante
+
+    def crear_comprobante(self, datos: dict) -> dict:
+        self.llamadas_crear.append(datos)
+        return {"CAE": self.cae, "CAEFchVto": self.vencimiento_cae}
+
+
+@pytest.fixture
+def mock_afip():
+    return MockPuertoAFIP()
+
+
+# ---------------------------------------------------------------------------
+# Fixtures de dominio
+# ---------------------------------------------------------------------------
+
 @pytest.fixture
 def contribuyente():
     return Contribuyente(

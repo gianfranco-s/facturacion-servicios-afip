@@ -34,7 +34,7 @@ class AfipAuth(BaseSettings):
     model_config = SettingsConfigDict(env_file=_config_entorno.env_file, env_file_encoding="utf-8")
     key_path: str
     cert_path: str
-    afip_access_token: SecretStr
+    afipsdk_access_token: SecretStr  # Required for AFIPSDK
     cuit: str
     is_production: bool
 

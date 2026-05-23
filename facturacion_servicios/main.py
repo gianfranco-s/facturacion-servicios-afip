@@ -4,12 +4,11 @@ from datetime import datetime
 from time import sleep
 from pathlib import Path
 
-from afip import Afip
-
+from facturacion_servicios.afip_port import PuertoAFIP
+from facturacion_servicios.afip_adapter import AdaptadorAfipSDK
 from facturacion_servicios.config import settings, afip_auth, invoice_source
 from facturacion_servicios.logging_conf import setup_logging
 from facturacion_servicios.afip_qr import invoice_validation_url, generate_qr
-from facturacion_servicios.afip_session import get_afip_session
 from facturacion_servicios.create_pdf import render_invoice, render_pdf, build_template_context
 from facturacion_servicios.voucher import get_cae, get_invoice_number
 from facturacion_servicios.afip_invoice_builder import AfipInvoiceBuilder, AfipInvoiceData
@@ -18,7 +17,7 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 
-def _get_valid_afip_data(afip_client: Afip, invoice_data: AfipInvoiceData) -> tuple:
+def _get_valid_afip_data(afip_client: PuertoAFIP, invoice_data: AfipInvoiceData) -> tuple:
     logger.warning("Comunicándose con ARCA (a través de servers de afipsdk)")
     tax_payer = invoice_data.tax_payer
     since, until, overdue = invoice_data.period
@@ -82,7 +81,7 @@ def _get_watermark_text(is_mock: bool, is_production: bool) -> str | None:
     return None
 
 
-def generate_invoice(afip_client: Afip | None,
+def generate_invoice(afip_client: PuertoAFIP | None,
                      invoice_source_files: dict[str, str],
                      output_dir: Path,
                      watermark_text: str | None = None) -> None:
@@ -130,7 +129,7 @@ def generate_invoice(afip_client: Afip | None,
 
 
 def main() -> None:
-    afip_client = None if settings.is_mock else get_afip_session(**afip_auth.model_dump())
+    afip_client = None if settings.is_mock else AdaptadorAfipSDK.desde_credenciales(**afip_auth.model_dump())
     output_dir = settings.output_dir if afip_auth.is_production else f"{settings.output_dir}-dev"
     generate_invoice(afip_client=afip_client,
                      invoice_source_files=invoice_source.model_dump(exclude={"invoice_source_dir"}),

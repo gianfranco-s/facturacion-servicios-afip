@@ -7,7 +7,7 @@ from datetime import datetime
 
 from facturacion_servicios.afip_enums import TipoFactura
 from facturacion_servicios.create_pdf import build_template_context
-from facturacion_servicios.voucher import _convert_data_for_voucher
+from facturacion_servicios.voucher import _convert_data_for_voucher, get_invoice_number, get_cae
 
 
 class TestDatosNotaDeCredito:
@@ -74,6 +74,32 @@ class TestVoucherWSFE:
 
     def test_imp_neto_igual_total(self, voucher):
         assert voucher["ImpNeto"] == voucher["ImpTotal"]
+
+
+class TestOrquestacionVoucher:
+    """get_invoice_number y get_cae orquestan correctamente el PuertoAFIP para Nota de Crédito."""
+
+    def test_numero_comprobante_es_ultimo_mas_uno(self, mock_afip, invoice_data_nota_de_credito):
+        numero = get_invoice_number(mock_afip,
+                                    sales_location=invoice_data_nota_de_credito.tax_payer.sales_location,
+                                    invoice_type=invoice_data_nota_de_credito.base_invoice_data.invoice_type)
+        assert numero == 52  # ultimo_comprobante=51 + 1
+
+    def test_get_cae_retorna_cae_y_vencimiento(self, mock_afip, invoice_data_nota_de_credito):
+        since, until, overdue = invoice_data_nota_de_credito.period
+        cae, vencimiento = get_cae(mock_afip, invoice_data_nota_de_credito,
+                                   invoice_number=1, date=datetime(2026, 4, 30),
+                                   since=since, until=until, overdue=overdue)
+        assert cae == mock_afip.cae
+        assert vencimiento == mock_afip.vencimiento_cae
+
+    def test_get_cae_incluye_cbtes_asoc_en_datos_enviados(self, mock_afip, invoice_data_nota_de_credito):
+        since, until, overdue = invoice_data_nota_de_credito.period
+        get_cae(mock_afip, invoice_data_nota_de_credito,
+                invoice_number=1, date=datetime(2026, 4, 30),
+                since=since, until=until, overdue=overdue)
+        datos_enviados = mock_afip.llamadas_crear[0]
+        assert "CbtesAsoc" in datos_enviados
 
 
 class TestContextoTemplate:

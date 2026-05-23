@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.4.0] - 2026-05-23
+
+### Changed
+- Added port to avoid depending only on AFIPSDK implementation.
+- env variable to `AFIPSDK_ACCESS_TOKEN`
+
 ## [v0.3.0] - 2026-05-23
 
 ### Added

@@ -159,7 +159,7 @@ OK. Autorización fue creada (CUITCOMPUTADOR=23316378609, ALIASCOMPUTADOR=gsalom
 CERT_PATH=<ruta al cert>
 KEY_PATH=<ruta a la privkey>
 CUIT=tu_cuit
-AFIP_ACCESS_TOKEN=tu_token
+AFIPSDK_ACCESS_TOKEN=tu_token
 IS_PRODUCTION=false
 ```
 
@@ -203,7 +203,7 @@ openssl req -new -key gsalomone-prd-privkey -subj "/C=AR/O=gianfranco-salomone/C
 CERT_PATH=<ruta al cert>
 KEY_PATH=<ruta a la privkey>
 CUIT=tu_cuit
-AFIP_ACCESS_TOKEN=tu_token
+AFIPSDK_ACCESS_TOKEN=tu_token
 IS_PRODUCTION=true
 ```
 
