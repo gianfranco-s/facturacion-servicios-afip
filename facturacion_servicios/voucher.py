@@ -1,9 +1,56 @@
+import socket
+import time
+import logging
 from datetime import datetime
+from functools import wraps
+
 from afip import Afip
 
 from facturacion_servicios.afip_enums import TipoFactura, Concepto, Consumidor, Contribuyente, DatosBaseFactura
 from facturacion_servicios.afip_invoice_builder import AfipInvoiceData
 
+logger = logging.getLogger(__name__)
+
+_ERRORES_DE_RED = (socket.gaierror, ConnectionError, OSError, TimeoutError)
+
+
+def reintentar_en_red(intentos: int = 3, espera: float = 2.0):
+    """Decorador que reintenta una función ante errores de red transientes.
+
+    Captura errores de DNS, conexión y timeout — típicos de llamadas a afipsdk
+    cuando la resolución DNS falla de forma intermitente.
+
+    Args:
+        intentos: Cantidad máxima de intentos (default: 3).
+        espera: Segundos de espera entre reintentos (default: 2).
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            ultimo_error = None
+            for intento in range(1, intentos + 1):
+                try:
+                    return func(*args, **kwargs)
+                except _ERRORES_DE_RED as e:
+                    ultimo_error = e
+                    if intento < intentos:
+                        logger.warning(
+                            "'%s' falló por error de red (intento %d/%d): %s. "
+                            "Reintentando en %.0fs...",
+                            func.__name__, intento, intentos, e, espera,
+                        )
+                        time.sleep(espera)
+                    else:
+                        logger.error(
+                            "'%s' falló tras %d intentos: %s",
+                            func.__name__, intentos, e,
+                        )
+            raise ultimo_error
+        return wrapper
+    return decorator
+
+
+@reintentar_en_red(intentos=3, espera=2)
 def get_cae(afip_client: Afip,
             invoice_data: AfipInvoiceData,
             invoice_number: int,
@@ -22,13 +69,13 @@ def get_cae(afip_client: Afip,
                                 until=until,
                                 overdue=overdue,
                                 importe_total=invoice_data.total_value)
-    
+
     voucher = afip_client.ElectronicBilling.createVoucher(voucher_data)
 
     return voucher.get('CAE'), voucher.get('CAEFchVto')
 
 
-
+@reintentar_en_red(intentos=3, espera=2)
 def get_invoice_number(afip_client: Afip, sales_location: int, invoice_type: TipoFactura) -> str:
     """Connects to ARCA to find out the last emitted voucher."""
     last_voucher = afip_client.ElectronicBilling.getLastVoucher(sales_location, invoice_type.value)
