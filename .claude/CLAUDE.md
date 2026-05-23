@@ -23,3 +23,5 @@
 - Automatizar tests para los casos de uso (`emitir_factura`, `emitir_nota_de_credito`)
 - Ampliar cobertura con tests unitarios: construcción del comprobante, generación de URL del QR, conversión de datos del voucher, etc.
 - Traducir conceptos al español siempre que sea posible (clases, variables, métodos, comentarios, etc.)
+
+### Implementadas
