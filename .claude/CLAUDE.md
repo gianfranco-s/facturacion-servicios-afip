@@ -1,3 +1,9 @@
+## Contexto actual
+<!-- Actualizar al inicio de cada sesión de trabajo -->
+- Trabajando en: Nota de Crédito
+- Estado: planificación completa, implementación pendiente
+- No tocar: `invoice_template.html` hasta tener el caso de uso funcionando
+
 ## Próximos pasos
 
 ## Agent instructions
@@ -6,6 +12,7 @@
 
 ### Funcionalidades
 - Generar Nota de Crédito (además de Factura)
+- Mejorar transición entre entornos de producción y homologación
 - Historial y sugerencias de datos
   - Importar datos de comprobantes anteriores y almacenarlos localmente (ej. SQLite o JSON persistente)
   - Al generar un nuevo comprobante, sugerir valores usados previamente: número de comprobante, cliente, importe, período, etc.

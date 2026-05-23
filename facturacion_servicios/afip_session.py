@@ -1,6 +1,7 @@
 from afip import Afip
 from pydantic import SecretStr
 
+
 def get_afip_session(cert_path: str,
                      key_path: str,
                      cuit: str,

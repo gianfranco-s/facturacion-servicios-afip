@@ -2,35 +2,36 @@
 
 Generar factura:
 ```sh
-python3 -m facturacion_servicios.main
+ENTORNO=dev python3 -m facturacion_servicios.main
 ```
 
 ## Modos de operación
 
-| Modo | `IS_MOCK` | `IS_PRODUCTION` | Conexión AFIP | Salida | Credenciales |
+La variable `ENTORNO` selecciona el archivo `.env.<entorno>` a cargar (ej. `ENTORNO=prd` → `.env.prd`).  
+`IS_PRODUCTION` se define dentro de ese archivo, no como variable de shell.
+
+| Modo | `ENTORNO` | `IS_MOCK` | Conexión AFIP | Salida | Credenciales |
 |---|---|---|---|---|---|
-| **Mock local** | `true` (default) | — | Ninguna (datos ficticios) | `invoices-dev/` | No requeridas |
-| **Homologación** | `false` | `false` | AFIP sandbox | `invoices-dev/` | Certs de homologación |
-| **Producción** | `false` | `true` | AFIP producción | `invoices/` | Certs de producción |
+| **Mock local** | `dev` | `true` (default) | Ninguna (datos ficticios) | `invoices-dev/` | No requeridas |
+| **Homologación** | `dev` | `false` | AFIP sandbox | `invoices-dev/` | Certs de homologación |
+| **Producción** | `prd` | `false` | AFIP producción | `invoices/` | Certs de producción |
 
 Los comprobantes en modo mock u homologación incluyen una marca de agua **"COMPROBANTE DE PRUEBA"**.
 
-**Mock local** (sin `.env`):
+**Mock local**:
 ```sh
-IS_MOCK=true python3 -m facturacion_servicios.main
+ENTORNO=dev IS_MOCK=true python3 -m facturacion_servicios.main
 ```
 
 **Homologación** (ver sección correspondiente para obtener credenciales):
 ```sh
-IS_MOCK=false IS_PRODUCTION=false python3 -m facturacion_servicios.main
+ENTORNO=dev IS_MOCK=false python3 -m facturacion_servicios.main
 ```
 
 **Producción** (ver sección correspondiente para obtener credenciales):
 ```sh
-IS_MOCK=false IS_PRODUCTION=true python3 -m facturacion_servicios.main
+ENTORNO=prd IS_MOCK=false python3 -m facturacion_servicios.main
 ```
-
-NOTA: tanto entornos de homologación como producción pueden gestionarse tanto con archivo `.env` como con variables de entorno.
 
 [Documentación ARCA](https://www.afip.gob.ar/ws/documentacion/arquitectura-general.asp)  
 [Documentación ARCA WSASS](https://www.afip.gob.ar/ws/WSASS/html/index.html)  
@@ -121,7 +122,7 @@ OK. Autorización fue creada (CUITCOMPUTADOR=23316378609, ALIASCOMPUTADOR=gsalom
 
 5. Registrar rutas absolutas de archivos.
 
-8. Crear o actualizar el archivo `.env` en la raíz del proyecto:
+8. Crear o actualizar el archivo `.env.dev` en la raíz del proyecto:
 ```env
 CERT_PATH=<ruta al cert>
 KEY_PATH=<ruta a la privkey>
@@ -165,7 +166,7 @@ openssl req -new -key gsalomone-prd-privkey -subj "/C=AR/O=gianfranco-salomone/C
 
 7. Guardar archivos relevantes (.cert y privkey) y registrar sus rutas absolutas.
 
-8. Crear o actualizar el archivo `.env` en la raíz del proyecto:
+8. Crear o actualizar el archivo `.env.prd` en la raíz del proyecto:
 ```env
 CERT_PATH=<ruta al cert>
 KEY_PATH=<ruta a la privkey>

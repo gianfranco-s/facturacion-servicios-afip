@@ -218,11 +218,16 @@ def render_pdf(rendered_html, file_name, ...) -> str:
 ## `config.py`
 
 ```python
-class Settings(BaseSettings):
-    is_mock: bool = True
-    output_dir: str = "invoices"
+class ConfigEntorno(BaseSettings):   # sin env_file; lee solo del shell
+    entorno: str                      # requerido: "dev" | "prd" (sin default)
 
-class AfipAuth(BaseSettings):        # lee desde .env
+    @property
+    def env_file(self) -> str:        # → ".env.dev" | ".env.prd"
+        return f".env.{self.entorno}"
+
+_config_entorno = ConfigEntorno()     # resuelto primero; determina el env_file
+
+class AfipAuth(BaseSettings):        # lee desde .env.<entorno>
     key_path: str
     cert_path: str
     afip_access_token: SecretStr
@@ -235,6 +240,10 @@ class InvoiceSource(BaseSettings):   # rutas con defaults
     contribuyente_filepath: str
     invoice_items_filepath: str
     base_invoice_data_filepath: str
+
+class Settings(BaseSettings):
+    is_mock: bool = True
+    output_dir: str = "invoices"
 ```
 
 ---
@@ -243,19 +252,27 @@ class InvoiceSource(BaseSettings):   # rutas con defaults
 
 | Clase | Variables | Fuente |
 |---|---|---|
+| `ConfigEntorno` | `ENTORNO` (**requerido**, sin default) | shell env var únicamente |
 | `Settings` | `IS_MOCK` (default `true`), `output_dir` | env vars |
-| `AfipAuth` | `KEY_PATH`, `CERT_PATH`, `CUIT`, `AFIP_ACCESS_TOKEN`, `IS_PRODUCTION` | `.env` |
+| `AfipAuth` | `KEY_PATH`, `CERT_PATH`, `CUIT`, `AFIP_ACCESS_TOKEN`, `IS_PRODUCTION` | `.env.<entorno>` |
 | `InvoiceSource` | Rutas a los 4 archivos JSON de entrada | valores por defecto |
+
+**Selección del archivo `.env`:** `ENTORNO` debe exportarse antes de iniciar la app. `ConfigEntorno` se instancia primero (sin leer ningún archivo `.env`), y su propiedad `env_file` determina qué archivo carga `AfipAuth`. Omitir `ENTORNO` produce un crash inmediato en el import.
+
+- `ENTORNO=dev` → `.env.dev`
+- `ENTORNO=prd` → `.env.prd`
 
 ---
 
 ## Modos de operación
 
-| Modo | `IS_MOCK` | `IS_PRODUCTION` | Conexión AFIP | Directorio salida | Marca de agua |
+| Modo | `ENTORNO` | `IS_MOCK` | Conexión AFIP | Directorio salida | Marca de agua |
 |---|---|---|---|---|---|
-| Mock local | `true` | — | Ninguna (datos ficticios) | `invoices-dev/` | "PRUEBA LOCAL" |
-| Homologación | `false` | `false` | AFIP sandbox | `invoices-dev/` | "HOMOLOGACIÓN" |
-| Producción | `false` | `true` | AFIP producción | `invoices/` | Ninguna |
+| Mock local | `dev` | `true` | Ninguna (datos ficticios) | `invoices-dev/` | "PRUEBA LOCAL" |
+| Homologación | `dev` | `false` | AFIP sandbox | `invoices-dev/` | "HOMOLOGACIÓN" |
+| Producción | `prd` | `false` | AFIP producción | `invoices/` | Ninguna |
+
+`IS_PRODUCTION` vive dentro del archivo `.env.<entorno>` — no se pasa como variable de shell.
 
 ---
 

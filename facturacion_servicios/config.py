@@ -4,8 +4,24 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+__EXISTING_ENV_FILES = (".env.dev", ".env.prd")
+
+class ConfigEntorno(BaseSettings):
+    entorno: str  # used to select .env.<entorno>
+
+    @property
+    def env_file(self) -> str:
+        env_file = f".env.{self.entorno}"
+        if self.entorno not in __EXISTING_ENV_FILES:
+            raise Exception("Invalid env file selected")
+        return env_file
+
+
+_config_entorno = ConfigEntorno()
+
+
 class InvoiceSource(BaseSettings):
-    """Path to required resources used to build the invoice"""
+    """Rutas a los recursos necesarios para construir el comprobante."""
     invoice_source_dir: str = "./invoice_data"
     consumidor_filepath: str = f"{invoice_source_dir}/consumidor.json"
     contribuyente_filepath: str = f"{invoice_source_dir}/contribuyente.json"
@@ -14,7 +30,8 @@ class InvoiceSource(BaseSettings):
 
 
 class AfipAuth(BaseSettings):
-    model_config = SettingsConfigDict(env_file="./.env", env_file_encoding="utf-8")
+    """Allows override of specific variables"""
+    model_config = SettingsConfigDict(env_file=_config_entorno.env_file, env_file_encoding="utf-8")
     key_path: str
     cert_path: str
     afip_access_token: SecretStr
