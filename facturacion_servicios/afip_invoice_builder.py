@@ -50,18 +50,23 @@ class AfipInvoiceData:
 
 
 def _get_period(month: int) -> tuple[datetime]:
-    """Calculates month_first_day, month_last_day, and overdue_date, 10 days after month_last_day"""
+    """Calculates month_first_day, month_last_day, and overdue_date, 10 days after month_last_day.
+
+    Si el overdue_date calculado es anterior a hoy (por ejemplo, al emitir un comprobante
+    de un mes ya vencido), se usa la fecha de hoy para evitar el error AFIP 10036:
+    'El campo FchVtoPago no puede ser anterior a la fecha del comprobante'.
+    """
     current_year = datetime.now().year
     month_first_day = datetime(current_year, month, 1)
-    
+
     if month == 12:
         month_last_day = datetime(current_year + 1, 1, 1) - timedelta(days=1)
     else:
         month_last_day = datetime(current_year, month + 1, 1) - timedelta(days=1)
-    
-    # Calculate the overdue date (10 days after the last day of the month)
-    overdue_date = month_last_day + timedelta(days=10)
-    
+
+    # El overdue_date nunca puede ser anterior a hoy (AFIP error 10036)
+    overdue_date = max(month_last_day + timedelta(days=10), datetime.today())
+
     return (month_first_day, month_last_day, overdue_date)
 
 
