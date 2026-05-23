@@ -9,10 +9,10 @@
 ## Agent instructions
 - To begin with, read ARCHITECTURE.md
 - If changes made by user or agent can affect ARCHITECTURE.md changes, update said file.
+- Every plan you make should be preceded by an abstract of no more than 10 lines, explaining the plan.
 
 ### Funcionalidades
 - Generar Nota de Crédito (además de Factura)
-- Mejorar transición entre entornos de producción y homologación
 - Historial y sugerencias de datos
   - Importar datos de comprobantes anteriores y almacenarlos localmente (ej. SQLite o JSON persistente)
   - Al generar un nuevo comprobante, sugerir valores usados previamente: número de comprobante, cliente, importe, período, etc.
@@ -25,3 +25,5 @@
 - Traducir conceptos al español siempre que sea posible (clases, variables, métodos, comentarios, etc.)
 
 ### Implementadas
+- Mejorar transición entre entornos de producción y homologación
+- 

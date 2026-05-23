@@ -56,10 +56,10 @@ def _convert_data_for_voucher(contribuyente: Contribuyente,
         fecha_servicio_hasta = int(until.strftime(r"%Y%m%d"))
         fecha_vencimiento_pago = int(overdue.strftime(r"%Y%m%d"))
 
-    return {
+    result = {
         "CantReg": 1, # Cantidad de facturas a registrar
         "PtoVta": contribuyente.sales_location,
-        "CbteTipo": base_invoice_data.invoice_type.value, 
+        "CbteTipo": base_invoice_data.invoice_type.value,
         "Concepto": base_invoice_data.concept.value,
         "DocTipo": consumidor.id_type.value,
         "DocNro": consumidor.id_nr,
@@ -69,7 +69,7 @@ def _convert_data_for_voucher(contribuyente: Contribuyente,
         "FchServDesde": fecha_servicio_desde,
         "FchServHasta": fecha_servicio_hasta,
         "FchVtoPago": fecha_vencimiento_pago,
-        # Para Factura C (monotributista): ImpNeto = ImpTotal, el resto en cero.
+        # Para Factura C y Nota de Crédito C (monotributista): ImpNeto = ImpTotal, el resto en cero.
         # ImpTotal debe ser igual a la suma de todos los campos Imp*.
         "ImpTotal": importe_total,
         "ImpTotConc": 0,  # Importe neto no gravado
@@ -81,3 +81,9 @@ def _convert_data_for_voucher(contribuyente: Contribuyente,
         "MonCotiz": 1,  # Cotización de la moneda usada (1 para pesos argentinos)
         "CondicionIVAReceptorId": consumidor.tax_situation.value,
     }
+
+    if base_invoice_data.comprobante_asociado:
+        ca = base_invoice_data.comprobante_asociado
+        result["CbtesAsoc"] = [{"Tipo": ca.tipo, "PtoVta": ca.pto_vta, "Nro": ca.nro}]
+
+    return result

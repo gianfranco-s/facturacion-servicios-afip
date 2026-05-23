@@ -12,8 +12,8 @@ class ConfigEntorno(BaseSettings):
     @property
     def env_file(self) -> str:
         env_file = f".env.{self.entorno}"
-        if self.entorno not in __EXISTING_ENV_FILES:
-            raise Exception("Invalid env file selected")
+        if env_file not in __EXISTING_ENV_FILES:
+            raise Exception(f"{env_file} is not within existing env files: {__EXISTING_ENV_FILES}")
         return env_file
 
 

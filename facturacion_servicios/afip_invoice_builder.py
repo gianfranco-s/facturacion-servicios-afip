@@ -8,6 +8,7 @@ from pathlib import Path
 from facturacion_servicios.afip_enums import (Mes,
                         Concepto,
                         CondicionFrenteIVA,
+                        ComprobanteAsociado,
                         Consumidor,
                         Contribuyente,
                         DatosBaseFactura,
@@ -105,11 +106,13 @@ class AfipInvoiceBuilder:
     def _load_base_invoice_data(filepath: Path) -> DatosBaseFactura:
         """This function is highly coupled with the implementation of Mes, Concepto and TipoFactura"""
         with open(filepath, "r") as f:
-            invoice_items_list = json.load(f)
-        invoice_items_list["month_billed"] = Mes(invoice_items_list["month_billed"])
-        invoice_items_list["concept"] = Concepto[invoice_items_list["concept"]]
-        invoice_items_list["invoice_type"] = TipoFactura[invoice_items_list["invoice_type"]]
-        return DatosBaseFactura(**invoice_items_list)
+            data = json.load(f)
+        data["month_billed"] = Mes(data["month_billed"])
+        data["concept"] = Concepto[data["concept"]]
+        data["invoice_type"] = TipoFactura[data["invoice_type"]]
+        if data.get("comprobante_asociado"):
+            data["comprobante_asociado"] = ComprobanteAsociado(**data["comprobante_asociado"])
+        return DatosBaseFactura(**data)
 
     @staticmethod
     def __load_legal_person(filepath: Path) -> dict:

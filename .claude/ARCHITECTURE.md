@@ -97,7 +97,7 @@ En modo **mock** (`IS_MOCK=true`), `get_afip_session()` no se llama y los datos 
 | Código | Nombre en `TipoFactura` | Estado |
 |---|---|---|
 | 11 | `c` | ✅ implementado |
-| 13 | `nota_de_credito_c` | 🔲 pendiente |
+| 13 | `nota_de_credito_c` | ✅ implementado |
 
 > Códigos completos: manual del desarrollador WSFEV1 (AFIP).
 
@@ -105,9 +105,10 @@ En modo **mock** (`IS_MOCK=true`), `get_afip_session()` no se llama y los datos 
 
 ## Decisiones de diseño no obvias
 
-- **Carga de enums desde JSON:** `_load_base_invoice_data` convierte strings a enums usando `Enum[key]` (por nombre) o `Enum(value)` (por valor). Al agregar un nuevo `TipoFactura`, el JSON usa el nombre del miembro (ej. `"nota_de_credito_c"`).
-- **`invoice_type` en la plantilla:** `build_template_context` expone tanto `.name.upper()` (letra visible, ej. `"C"`) como `.value` (código numérico AFIP, ej. `11`). Si se agrega un tipo nuevo, verificar que la plantilla muestre la letra correcta.
-- **`ImpNeto == ImpTotal`:** para monotributistas no hay IVA discriminado; `_convert_data_for_voucher` envía `ImpIVA=0` e `ImpNeto=ImpTotal`. No cambiar sin verificar contra WSFE.
+- **Carga de enums desde JSON:** `_load_base_invoice_data` convierte strings a enums usando `Enum[key]` (por nombre) o `Enum(value)` (por valor). Al agregar un nuevo `TipoFactura`, el JSON usa el nombre del miembro (ej. `"nota_de_credito_c"`). `comprobante_asociado` se carga como `ComprobanteAsociado(**dict)` si está presente.
+- **`TipoFactura.letra` / `.etiqueta`:** propiedades del enum que desacoplan la representación visual del valor AFIP. La plantilla usa `invoice_type_letra` (siempre `"C"`) y `document_label` (`"Factura"` o `"Nota de Crédito"`). Al agregar un tipo nuevo, extender ambas propiedades.
+- **`CbtesAsoc` para Nota de Crédito:** `_convert_data_for_voucher` agrega la lista solo si `base_invoice_data.comprobante_asociado` está definido. La librería `afip-py` envuelve la lista en `{"CbteAsoc": [...]}` automáticamente.
+- **`ImpNeto == ImpTotal`:** para monotributistas no hay IVA discriminado; `_convert_data_for_voucher` envía `ImpIVA=0` e `ImpNeto=ImpTotal`. Aplica tanto a Factura C como a Nota de Crédito C. No cambiar sin verificar contra WSFE.
 
 ---
 
@@ -123,11 +124,22 @@ Los 4 archivos JSON se editan manualmente antes de cada emisión. **Principal fu
 
 ## Guía de extensión para agentes
 
-### Agregar un nuevo tipo de comprobante (ej. Nota de Crédito C)
+### Emitir una Nota de Crédito C
 
-1. **`afip_enums.py`** → agregar miembro a `TipoFactura`: `nota_de_credito_c = 13`
-2. **`invoice_data/base_invoice_data.json`** → cambiar `"invoice_type": "nota_de_credito_c"`
-3. **`invoice_template.html`** → verificar que la letra del recuadro central sea correcta ("C" para Nota de Crédito C)
-4. **`voucher.py`** → `_convert_data_for_voucher` no requiere cambios; `CbteTipo` se toma de `invoice_type.value` automáticamente
-5. **`afip_qr.py`** → sin cambios; `tipoCmp` ya usa el código directamente
-6. Si la Nota de Crédito debe referenciar la factura original: agregar `cbte_asociado` en `DatosBaseFactura` y mapearlo en `_convert_data_for_voucher` (clave WSFE: `CbtesAsoc`)
+Editar `invoice_data/base_invoice_data.json`:
+```json
+{
+  "month_billed": 4,
+  "concept": "servicios",
+  "invoice_type": "nota_de_credito_c",
+  "comprobante_asociado": { "tipo": 11, "pto_vta": 1, "nro": 52 }
+}
+```
+El resto del flujo (ítems, contribuyente, consumidor) es idéntico al de una Factura C.
+
+### Agregar un nuevo tipo de comprobante
+
+1. **`afip_enums.py`** → agregar miembro a `TipoFactura` con el código AFIP; extender propiedades `letra` y `etiqueta`
+2. Si requiere comprobante asociado, ya está soportado vía `comprobante_asociado` en `DatosBaseFactura`
+3. **`voucher.py`** → `CbteTipo` se toma de `invoice_type.value` automáticamente; sin cambios salvo lógica de importes nueva
+4. **`afip_qr.py`** → sin cambios

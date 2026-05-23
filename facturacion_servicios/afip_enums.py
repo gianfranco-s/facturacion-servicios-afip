@@ -4,6 +4,21 @@ from enum import Enum
 
 class TipoFactura(Enum):
 	c = 11
+	nota_de_credito_c = 13
+
+	@property
+	def letra(self) -> str:
+		"""Letra que aparece en el recuadro central del comprobante."""
+		return "C"  # todos los tipos del monotributista son C
+
+	@property
+	def etiqueta(self) -> str:
+		"""Nombre completo del tipo de comprobante para el encabezado del PDF."""
+		if self == TipoFactura.c:
+			return "Factura"
+		if self == TipoFactura.nota_de_credito_c:
+			return "Nota de Crédito"
+		raise ValueError(f"Etiqueta no definida para {self}")
 
 
 class Concepto(Enum):
@@ -66,11 +81,20 @@ class Contribuyente(Consumidor):
 
 
 @dataclass
+class ComprobanteAsociado:
+	"""Referencia al comprobante original que origina la Nota de Crédito."""
+	tipo: int     # CbteTipo del comprobante original (ej. 11 para Factura C)
+	pto_vta: int  # punto de venta del comprobante original
+	nro: int      # número del comprobante original
+
+
+@dataclass
 class DatosBaseFactura:
 	month_billed: Mes
 	concept: Concepto
 	invoice_type: TipoFactura
 	overdue_date: str | None = None  # ISO format YYYY-MM-DD; overrides auto-calculated date when set
+	comprobante_asociado: ComprobanteAsociado | None = None  # requerido para Nota de Crédito
 
 
 @dataclass

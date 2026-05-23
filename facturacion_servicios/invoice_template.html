@@ -183,11 +183,11 @@
           <p><strong>Condición Frente al IVA:</strong> {{ condicion_frente_al_iva.replace("_", " ").title().replace("Iva", "IVA") }}</p>
         </td>
         <td class="emitter-col-center">
-          <div class="bill-type">{{ invoice_type }}</div>
+          <div class="bill-type">{{ invoice_type_letra }}</div>
           <div class="bill-type-caption">COD. {{ invoice_type_code }}</div>
         </td>
         <td class="emitter-col-right">
-          <div class="text-lg">Factura</div>
+          <div class="text-lg">{{ document_label }}</div>
           <div class="row">
             <p class="col-6 margin-b-0"><strong>Punto de Venta:</strong> {{ sales_location }}</p>
             <p class="col-6 margin-b-0"><strong>Comp. Nro:</strong> {{ invoice_number }}</p>
